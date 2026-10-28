@@ -37,6 +37,7 @@ final class ProblemDetails
             404 => 'recurso-no-encontrado',
             405 => 'metodo-no-permitido',
             409 => 'conflicto-de-estado',
+            410 => 'enlace-expirado',
             422 => 'regla-de-negocio',
             423 => 'cuenta-bloqueada',
             429 => 'demasiadas-solicitudes',

@@ -1,0 +1,3571 @@
+{
+  "info": {
+    "name": "PRAXIS API v1",
+    "description": "Colección de referencia de docs/API.md, agrupada por épica (no es un flujo para ejecutar de corrido: cada acción exige que la incidencia esté en el estado correcto). Uso: elige usuario en las variables `email`/`password`, ejecuta **POST /auth/login** (guarda `access_token` automáticamente) y, si el usuario tiene varios roles, pon el rol en `rol_activo`. Radicar, subir evidencias y los POST de creación guardan sus ids en variables para las siguientes peticiones. Para descargar una evidencia usa la `url` firmada que devuelven las respuestas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fecha de mañana (Y-m-d) para los campos fecha_programada / fecha_visita_tentativa.",
+          "pm.collectionVariables.set('manana', new Date(Date.now() + 86400000).toISOString().slice(0, 10));"
+        ]
+      }
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "rol_activo",
+      "value": ""
+    },
+    {
+      "key": "email",
+      "value": "admin@praxis.test"
+    },
+    {
+      "key": "password",
+      "value": "Praxis*2026"
+    },
+    {
+      "key": "incidencia_id",
+      "value": ""
+    },
+    {
+      "key": "incidencia_principal_id",
+      "value": ""
+    },
+    {
+      "key": "evidencia_id",
+      "value": ""
+    },
+    {
+      "key": "solicitud_id",
+      "value": ""
+    },
+    {
+      "key": "notificacion_id",
+      "value": ""
+    },
+    {
+      "key": "usuario_id",
+      "value": ""
+    },
+    {
+      "key": "nivel",
+      "value": "edificios"
+    },
+    {
+      "key": "ubicacion_id",
+      "value": ""
+    },
+    {
+      "key": "categoria_admin_id",
+      "value": ""
+    },
+    {
+      "key": "token_recuperacion",
+      "value": "pega-aqui-el-token-del-correo"
+    },
+    {
+      "key": "manana",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "E01 · Acceso, seguridad y usuarios",
+      "item": [
+        {
+          "name": "POST /auth/login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión: devuelve el access token y deja el refresh token en la cookie HttpOnly `praxis_refresh`.\n\nRoles: Público (sin token).",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('access_token', pm.response.json().access_token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /auth/refresh",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Rota el refresh token: emite un access token nuevo y una cookie `praxis_refresh` nueva.\n\nRoles: Público (sin token).",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"invalido\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /auth/me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Perfil del usuario autenticado: roles, rol activo, ruta de inicio, especialidades y permisos del rol activo.\n\nRoles: Cualquier usuario autenticado."
+          }
+        },
+        {
+          "name": "POST /auth/solicitar-recuperacion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/solicitar-recuperacion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "solicitar-recuperacion"
+              ]
+            },
+            "description": "Envía el correo de restablecimiento de contraseña. Responde igual exista o no el correo.\n\nRoles: Público (sin token).",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"reportante@praxis.test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /auth/restablecer-password/{token}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/restablecer-password/{{token_recuperacion}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "restablecer-password",
+                "{{token_recuperacion}}"
+              ]
+            },
+            "description": "Valida el enlace de recuperación antes de mostrar el formulario.\n\nRoles: Público (sin token).",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "POST /auth/restablecer-password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/restablecer-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "restablecer-password"
+              ]
+            },
+            "description": "Cambia la contraseña con el token del correo e invalida las sesiones abiertas.\n\nRoles: Público (sin token).",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{token_recuperacion}}\",\n  \"password\": \"Nueva*Clave2026\",\n  \"password_confirmation\": \"Nueva*Clave2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /admin/usuarios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios?rol=R04&per_page=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios"
+              ],
+              "query": [
+                {
+                  "key": "rol",
+                  "value": "R04"
+                },
+                {
+                  "key": "per_page",
+                  "value": "2"
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Busca en nombre o correo."
+                },
+                {
+                  "key": "activo",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Lista paginada de usuarios con roles y especialidades.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /admin/usuarios",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios"
+              ]
+            },
+            "description": "Crea un usuario con sus roles y especialidades.\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Nora Técnica\",\n  \"email\": \"nora@praxis.test\",\n  \"telefono\": \"3001234567\",\n  \"password\": \"Clave*Segura1\",\n  \"roles\": [\n    \"R04\"\n  ],\n  \"especialidades\": [\n    \"ELECTRICIDAD\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('usuario_id', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /admin/usuarios/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios/{{usuario_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios",
+                "{{usuario_id}}"
+              ]
+            },
+            "description": "Detalle de un usuario.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "PUT /admin/usuarios/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios/{{usuario_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios",
+                "{{usuario_id}}"
+              ]
+            },
+            "description": "Actualiza datos básicos y especialidades (los roles se cambian en `/roles`).\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefono\": \"3109876543\",\n  \"especialidades\": [\n    \"ELECTRICIDAD\",\n    \"GENERAL\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT /admin/usuarios/{id}/roles",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios/{{usuario_id}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios",
+                "{{usuario_id}}",
+                "roles"
+              ]
+            },
+            "description": "Reemplaza los roles del usuario.\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roles\": [\n    \"R04\",\n    \"R06\"\n  ],\n  \"motivo\": \"Apoyará verificaciones.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH /admin/usuarios/{id}/estado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/usuarios/{{usuario_id}}/estado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "usuarios",
+                "{{usuario_id}}",
+                "estado"
+              ]
+            },
+            "description": "Activa o inactiva (borrado lógico) un usuario. Inactivar revoca sus sesiones.\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": false,\n  \"motivo\": \"Fin de contrato.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /admin/roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "roles"
+              ]
+            },
+            "description": "Catálogo de los 7 roles (D03).\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "GET /admin/especialidades",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/especialidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "especialidades"
+              ]
+            },
+            "description": "Catálogo de especialidades técnicas.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /auth/logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Cierra la sesión: revoca el access token y el refresh token y borra la cookie.\n\nRoles: Cualquier usuario autenticado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "E02 · Shell, navegación, panel y notificaciones",
+      "item": [
+        {
+          "name": "GET /navegacion/menu",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/navegacion/menu",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "navegacion",
+                "menu"
+              ]
+            },
+            "description": "Ítems del menú lateral del rol activo según la matriz D09.\n\nRoles: Cualquier usuario autenticado."
+          }
+        },
+        {
+          "name": "GET /panel/resumen",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/panel/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "panel",
+                "resumen"
+              ]
+            },
+            "description": "Contadores del panel de inicio: solicitudes propias por estado, pendientes de acción (E02/E14) y últimas actualizadas.\n\nRoles: R01 Reportante, R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "GET /catalogo/glosario-estados",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/glosario-estados",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "glosario-estados"
+              ]
+            },
+            "description": "Glosario de los 18 estados con significado para el usuario, color y si requieren acción del reportante (ayuda).\n\nRoles: Cualquier usuario autenticado."
+          }
+        },
+        {
+          "name": "GET /notificaciones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notificaciones?per_page=3",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notificaciones"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "3"
+                },
+                {
+                  "key": "solo_no_leidas",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Opcional."
+                }
+              ]
+            },
+            "description": "Notificaciones del usuario, más recientes primero, con el contador `no_leidas` para el badge.\n\nRoles: Cualquier usuario autenticado."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('notificacion_id', (pm.response.json().data[0] || {}).id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /notificaciones/{notificacion}/leer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notificaciones/{{notificacion_id}}/leer",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notificaciones",
+                "{{notificacion_id}}",
+                "leer"
+              ]
+            },
+            "description": "Marca una notificación como leída.\n\nRoles: Cualquier usuario autenticado."
+          }
+        },
+        {
+          "name": "PATCH /notificaciones/leer-todas",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notificaciones/leer-todas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notificaciones",
+                "leer-todas"
+              ]
+            },
+            "description": "Marca todas las notificaciones del usuario como leídas.\n\nRoles: Cualquier usuario autenticado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "E03 · Radicación, evidencias y duplicados",
+      "item": [
+        {
+          "name": "GET /catalogo/ubicaciones/arbol-activo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/ubicaciones/arbol-activo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "ubicaciones",
+                "arbol-activo"
+              ]
+            },
+            "description": "Árbol sede > edificio > piso > espacio con solo las ubicaciones activas (selector en cascada del formulario).\n\nRoles: Cualquier usuario autenticado."
+          }
+        },
+        {
+          "name": "GET /catalogo/categorias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/categorias",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "categorias"
+              ]
+            },
+            "description": "Categorías activas con sus subcategorías e indicadores (`exige_evidencia_fotografica`, `requiere_confirmacion_cierre`, `nivel_riesgo_base`).\n\nRoles: Cualquier usuario autenticado."
+          }
+        },
+        {
+          "name": "GET /catalogo/prioridades",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/prioridades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "prioridades"
+              ]
+            },
+            "description": "Prioridades con sus metas SLA en horas hábiles.\n\nRoles: Cualquier usuario autenticado."
+          }
+        },
+        {
+          "name": "POST /incidencias/evidencias/upload",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/evidencias/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "evidencias",
+                "upload"
+              ]
+            },
+            "description": "Sube uno o varios archivos de evidencia. Devuelve sus `id` para referenciarlos después.\n\nRoles: Cualquier usuario autenticado.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "archivos[]",
+                  "type": "file",
+                  "src": [],
+                  "description": "JPG, PNG, WEBP o PDF; máx. 10 MB."
+                },
+                {
+                  "key": "incidencia_id",
+                  "value": "{{incidencia_id}}",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "etapa",
+                  "value": "INSPECCION",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('evidencia_id', pm.response.json().data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /incidencias/coincidencias-activas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/coincidencias-activas?espacio_fisico_id=1&categoria_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "coincidencias-activas"
+              ],
+              "query": [
+                {
+                  "key": "espacio_fisico_id",
+                  "value": "1"
+                },
+                {
+                  "key": "categoria_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Incidencias abiertas (E01-E11, últimos 15 días) en el mismo espacio y categoría, para advertir posibles duplicados antes de radicar.\n\nRoles: R01 Reportante, R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /incidencias/radicar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}",
+                "description": "Opcional. Si se repite con el mismo valor, devuelve la incidencia ya creada (200) en lugar de duplicarla."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/radicar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "radicar"
+              ]
+            },
+            "description": "Radica una incidencia nueva y genera su código `TKT-AAAA-######`.\n\nRoles: R01 Reportante, R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R07 Administrador de plataforma\n\nEstado: — → E01",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sede_id\": 1,\n  \"edificio_id\": 1,\n  \"piso_id\": 1,\n  \"espacio_fisico_id\": 1,\n  \"categoria_id\": 1,\n  \"subcategoria_id\": 2,\n  \"resumen\": \"Luminaria apagada en Aula 101\",\n  \"descripcion\": \"La luminaria del fondo del aula no enciende desde ayer en la tarde.\",\n  \"canal_radicacion\": \"WEB\",\n  \"es_riesgo_inmediato\": false,\n  \"evidencias\": [\n    {{evidencia_id}}\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('incidencia_id', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/suscribir-seguimiento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/suscribir-seguimiento",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "suscribir-seguimiento"
+              ]
+            },
+            "description": "Suscribe al usuario a una incidencia ajena para recibir sus actualizaciones (en lugar de radicar un duplicado).\n\nRoles: R01 Reportante, R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "GET /evidencias/{evidencia}/descargar",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/evidencias/{{evidencia_id}}/descargar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "evidencias",
+                "{{evidencia_id}}",
+                "descargar"
+              ]
+            },
+            "description": "Descarga el archivo de una evidencia. Se usa la `url` firmada que traen las respuestas (vence en 30 min); no requiere token.\n\nRoles: Público (sin token).",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "E04 · Mis solicitudes (reportante)",
+      "item": [
+        {
+          "name": "GET /mis-solicitudes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/mis-solicitudes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mis-solicitudes"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Opcional. Uno o varios códigos separados por coma: `E02,E14`."
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Opcional. Busca en código de ticket o resumen."
+                },
+                {
+                  "key": "ambito",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Opcional: `propias` (defecto), `seguidas` (suscritas) o `todas`."
+                },
+                {
+                  "key": "per_page",
+                  "value": "",
+                  "disabled": true,
+                  "description": "1-100, por defecto 15."
+                },
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Solicitudes del usuario autenticado, más recientes primero.\n\nRoles: R01 Reportante, R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "GET /mis-solicitudes/{incidencia}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/mis-solicitudes/{{incidencia_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mis-solicitudes",
+                "{{incidencia_id}}"
+              ]
+            },
+            "description": "Ficha de seguimiento: datos, evidencias, historial público, aclaración pendiente, acciones disponibles y ticket principal si fue unificada.\n\nRoles: R01 Reportante, R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /mis-solicitudes/{incidencia}/aclaraciones",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/mis-solicitudes/{{incidencia_id}}/aclaraciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mis-solicitudes",
+                "{{incidencia_id}}",
+                "aclaraciones"
+              ]
+            },
+            "description": "El reportante responde la aclaración pedida por el gestor.\n\nRoles: R01 Reportante, R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma\n\nEstado: E02 → E03",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"respuesta\": \"Está totalmente apagada, no parpadea.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/cancelar-solicitante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/cancelar-solicitante",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "cancelar-solicitante"
+              ]
+            },
+            "description": "El creador cancela su propia solicitud mientras no tenga técnico asignado.\n\nRoles: R01 Reportante, R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma\n\nEstado: E01, E02, E03, E04 → E17",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Ya la arreglaron los vigilantes.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/reabrir",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/reabrir",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "reabrir"
+              ]
+            },
+            "description": "El creador reabre una solicitud cerrada dentro de la ventana de garantía; la prioridad pasa a Alta y se alerta a coordinación.\n\nRoles: R01 Reportante, R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma\n\nEstado: E15 → E13 (si hubo intervención) o E05",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"La luminaria volvió a apagarse al día siguiente.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/confirmar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/confirmar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "confirmar"
+              ]
+            },
+            "description": "El reportante confirma que el problema quedó resuelto y califica el servicio.\n\nRoles: R01 Reportante, R07 Administrador de plataforma\n\nEstado: E14 → E15",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"calificacion\": 5,\n  \"comentario\": \"Quedó funcionando.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/rechazar-conformidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/rechazar-conformidad",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "rechazar-conformidad"
+              ]
+            },
+            "description": "El reportante indica que el problema persiste; vuelve a corrección.\n\nRoles: R01 Reportante, R07 Administrador de plataforma\n\nEstado: E14 → E13",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"La luminaria vuelve a parpadear.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "E05 · Triaje: revisión, duplicados, clasificación y riesgo",
+      "item": [
+        {
+          "name": "GET /incidencias/{incidencia}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}"
+              ]
+            },
+            "description": "Ficha operativa completa de una incidencia (para la mesa de ayuda, coordinación, técnicos y verificación).\n\nRoles: R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/iniciar-revision",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/iniciar-revision",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "iniciar-revision"
+              ]
+            },
+            "description": "El gestor toma la incidencia para revisarla.\n\nRoles: R02 Gestor de incidencias, R07 Administrador de plataforma\n\nEstado: E01 → E03"
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/solicitar-aclaracion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/solicitar-aclaracion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "solicitar-aclaracion"
+              ]
+            },
+            "description": "Pide información adicional al reportante; fija un plazo de respuesta en días hábiles y lo notifica.\n\nRoles: R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E03 → E02",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"informacion_requerida\": \"¿La luminaria parpadea o está totalmente apagada?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /incidencias/{incidencia}/posibles-duplicados",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/posibles-duplicados",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "posibles-duplicados"
+              ]
+            },
+            "description": "Candidatos a duplicado ponderados por ubicación, categoría, similitud de descripción y estado abierto.\n\nRoles: R02 Gestor de incidencias, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/vincular-duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/vincular-duplicado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "vincular-duplicado"
+              ]
+            },
+            "description": "Unifica la incidencia como duplicada de otra principal; su reportante pasa a seguir la principal.\n\nRoles: R02 Gestor de incidencias, R07 Administrador de plataforma\n\nEstado: E01, E03, E04 → E15",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"incidencia_principal_id\": \"{{incidencia_principal_id}}\",\n  \"observaciones\": \"Mismo daño reportado en A-101.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/descartar-duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/descartar-duplicado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "descartar-duplicado"
+              ]
+            },
+            "description": "Descarta la sugerencia de duplicado y quita la marca `posible_duplicado`.\n\nRoles: R02 Gestor de incidencias, R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observaciones\": \"Es un daño distinto.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/clasificar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/clasificar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "clasificar"
+              ]
+            },
+            "description": "Decide la procedencia. Si procede, calcula la prioridad con la matriz Impacto × Urgencia, fija el plazo SLA de resolución y remite a coordinación.\n\nRoles: R02 Gestor de incidencias, R07 Administrador de plataforma\n\nEstado: E03/E04 → E05 (procedente) · E03/E04 → E16 (no procedente)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"procedente\": true,\n  \"impacto\": \"MEDIO\",\n  \"urgencia\": \"MEDIA\",\n  \"justificacion\": \"Afecta una sola aula.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH /incidencias/{incidencia}/prioridad",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/prioridad",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "prioridad"
+              ]
+            },
+            "description": "Recalcula la prioridad de una incidencia ya clasificada y deja el cambio en el historial (RN-020).\n\nRoles: R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"impacto\": \"ALTO\",\n  \"urgencia\": \"MEDIA\",\n  \"justificacion\": \"El aula tiene clases nocturnas.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/evaluacion-riesgo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/evaluacion-riesgo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "evaluacion-riesgo"
+              ]
+            },
+            "description": "Registra la evaluación de riesgo. Con riesgo inmediato activa el protocolo de emergencia: prioridad Crítica, salto a E05 y alerta a coordinación.\n\nRoles: R02 Gestor de incidencias, R07 Administrador de plataforma\n\nEstado: Con riesgo: E01/E03/E04 → E05 (vía rápida). Sin riesgo: no cambia.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiene_riesgo_inmediato\": true,\n  \"nivel_riesgo\": \"INMEDIATO\",\n  \"acciones_adoptadas\": \"Se cortó la energía del bloque B y se acordonó el cuarto técnico.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "E06 · Asignación y planificación",
+      "item": [
+        {
+          "name": "GET /tecnicos/disponibles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tecnicos/disponibles?categoria_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tecnicos",
+                "disponibles"
+              ],
+              "query": [
+                {
+                  "key": "categoria_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Técnicos activos con su carga actual y el límite WIP; si se filtra por categoría, solo los de la especialidad requerida.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/asignar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/asignar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "asignar"
+              ]
+            },
+            "description": "Asigna (o reasigna) el técnico responsable y lo notifica.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E05 → E06 (reasignar no cambia el estado)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tecnico_id\": 4,\n  \"instrucciones\": \"Revisar balasto y tubo.\",\n  \"fecha_visita_tentativa\": \"{{manana}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/programar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/programar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "programar"
+              ]
+            },
+            "description": "Aprueba el diagnóstico y programa la intervención (cuando no hacen falta recursos).\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E07 → E10",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha_programada\": \"{{manana}}\",\n  \"hora_inicio\": \"07:00\",\n  \"hora_fin\": \"08:00\",\n  \"cuadrilla\": \"Electricidad 1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH /incidencias/{incidencia}/reprogramar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/reprogramar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "reprogramar"
+              ]
+            },
+            "description": "Cambia la fecha u hora del plan vigente y guarda la fecha anterior con el motivo.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E10 → E10 (sin cambio)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha_programada\": \"{{manana}}\",\n  \"hora_inicio\": \"14:00\",\n  \"hora_fin\": \"16:00\",\n  \"motivo\": \"El aula está ocupada en la mañana.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/devolver-diagnostico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/devolver-diagnostico",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "devolver-diagnostico"
+              ]
+            },
+            "description": "Devuelve el diagnóstico al técnico por insuficiente; debe volver a inspeccionar.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E07 → E06",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observaciones\": \"Indique si la caja también está dañada.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/cerrar-no-confirmada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/cerrar-no-confirmada",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "cerrar-no-confirmada"
+              ]
+            },
+            "description": "Visto bueno del coordinador al descarte del técnico: cierra con resultado `NO_CONFIRMADA_EN_INSPECCION`.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E07 → E15",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"observaciones\": \"Se acepta el descarte del técnico.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "E07 · Inspección, diagnóstico y ejecución",
+      "item": [
+        {
+          "name": "GET /tecnico/tareas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tecnico/tareas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tecnico",
+                "tareas"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Por defecto 20."
+                }
+              ]
+            },
+            "description": "Bandeja del técnico: sus incidencias activas (E06 a E11, E13 y E18), primero las de riesgo.\n\nRoles: R04 Técnico de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/iniciar-inspeccion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/iniciar-inspeccion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "iniciar-inspeccion"
+              ]
+            },
+            "description": "El técnico asignado inicia la inspección en sitio.\n\nRoles: R04 Técnico de mantenimiento, R07 Administrador de plataforma\n\nEstado: E06 → E07"
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/diagnostico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/diagnostico",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "diagnostico"
+              ]
+            },
+            "description": "Registra el diagnóstico de un daño confirmado con la intervención propuesta; notifica a coordinación.\n\nRoles: R04 Técnico de mantenimiento, R07 Administrador de plataforma\n\nEstado: E07 → E07 (habilita la decisión del coordinador)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hallazgos\": \"Balasto quemado y tubo fundido.\",\n  \"descripcion_problema\": \"Falla del balasto electrónico de la luminaria.\",\n  \"intervencion_propuesta\": \"Reemplazar balasto y tubo LED.\",\n  \"requiere_recursos\": true,\n  \"requiere_autorizacion\": true,\n  \"evidencias\": [\n    {{evidencia_id}}\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/descartar-por-inspeccion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/descartar-por-inspeccion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "descartar-por-inspeccion"
+              ]
+            },
+            "description": "El técnico documenta que el daño no existe; exige evidencia del estado funcional y espera el visto bueno del coordinador.\n\nRoles: R04 Técnico de mantenimiento, R07 Administrador de plataforma\n\nEstado: E07 → E07 (queda para `cerrar-no-confirmada`)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hallazgos\": \"Tablero en buen estado, sin rastros de arco eléctrico.\",\n  \"justificacion\": \"Las chispas provenían de una extensión personal ya retirada.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/iniciar-atencion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/iniciar-atencion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "iniciar-atencion"
+              ]
+            },
+            "description": "El técnico inicia la intervención física.\n\nRoles: R04 Técnico de mantenimiento, R07 Administrador de plataforma\n\nEstado: E10 → E11"
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/registrar-intervencion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/registrar-intervencion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "registrar-intervencion"
+              ]
+            },
+            "description": "Registra lo realizado, el tiempo y los materiales, con evidencia obligatoria, y pasa a verificación.\n\nRoles: R04 Técnico de mantenimiento, R07 Administrador de plataforma\n\nEstado: E11 → E12",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actividades_realizadas\": \"Se reemplazó el balasto y los dos tubos.\",\n  \"tiempo_invertido_minutos\": 45,\n  \"materiales\": [\n    {\n      \"nombre\": \"Balasto electrónico 2x32W\",\n      \"cantidad\": 1,\n      \"unidad\": \"UND\"\n    }\n  ],\n  \"evidencias\": [\n    {{evidencia_id}}\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/suspender",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/suspender",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "suspender"
+              ]
+            },
+            "description": "Suspende temporalmente la atención con causa, motivo y condiciones para reanudar; se comunica al reportante.\n\nRoles: R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R07 Administrador de plataforma\n\nEstado: E06, E07, E09, E10, E11 → E18",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"causal\": \"ACCESO_RESTRINGIDO\",\n  \"motivo_detallado\": \"El aula está cerrada por evento institucional.\",\n  \"condiciones_reanudacion\": \"Reanudar cuando termine el evento.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/reanudar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/reanudar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "reanudar"
+              ]
+            },
+            "description": "Reanuda una incidencia suspendida y registra cuánto duró la pausa.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E18 → E10 o E11",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado_destino\": \"E10\",\n  \"observacion\": \"El evento terminó, se retoma el plan.\",\n  \"fecha_programada\": \"{{manana}}\",\n  \"hora_inicio\": \"14:00\",\n  \"hora_fin\": \"16:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "E08 · Recursos y autorizaciones",
+      "item": [
+        {
+          "name": "POST /incidencias/{incidencia}/solicitudes-recursos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/solicitudes-recursos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "solicitudes-recursos"
+              ]
+            },
+            "description": "Registra los recursos que faltan para la intervención.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E07 → E08 (requiere autorización) · E07 → E09 (sin autorización) · emergencia: sin cambio",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision_requerida\": \"Aprobar compra de balasto electrónico.\",\n  \"requiere_autorizacion\": true,\n  \"items\": [\n    {\n      \"recurso_nombre\": \"Balasto electrónico 2x32W\",\n      \"cantidad\": 1,\n      \"unidad\": \"UND\",\n      \"costo_estimado\": 85000\n    },\n    {\n      \"recurso_nombre\": \"Tubo LED T8\",\n      \"cantidad\": 2,\n      \"unidad\": \"UND\",\n      \"costo_estimado\": 18000\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('solicitud_id', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /autorizaciones/pendientes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/autorizaciones/pendientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "autorizaciones",
+                "pendientes"
+              ]
+            },
+            "description": "Bandeja de solicitudes de recursos pendientes de dictamen.\n\nRoles: R03 Coordinador de mantenimiento, R05 Responsable de autorizaciones, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /solicitudes-recursos/{id}/dictamen",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/solicitudes-recursos/{{solicitud_id}}/dictamen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "solicitudes-recursos",
+                "{{solicitud_id}}",
+                "dictamen"
+              ]
+            },
+            "description": "Emite el dictamen sobre una solicitud que requiere autorización.\n\nRoles: R03 Coordinador de mantenimiento, R05 Responsable de autorizaciones, R07 Administrador de plataforma\n\nEstado: APROBADA: E08 → E10 (recursos disponibles) o E09 · RECHAZADA: E08 → E07, E18 o E17 según `accion_rechazo`",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resultado\": \"APROBADA\",\n  \"justificacion\": \"Costo dentro del presupuesto.\",\n  \"recursos_disponibles\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH /incidencias/{incidencia}/confirmar-recursos",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/confirmar-recursos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "confirmar-recursos"
+              ]
+            },
+            "description": "Confirma que todos los recursos llegaron y programa la intervención.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E09 → E10",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"todos_disponibles\": true,\n  \"fecha_programada\": \"{{manana}}\",\n  \"hora_inicio\": \"09:00\",\n  \"hora_fin\": \"11:00\",\n  \"cuadrilla\": \"Electricidad 1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /solicitudes-recursos/{id}/seguimientos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/solicitudes-recursos/{{solicitud_id}}/seguimientos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "solicitudes-recursos",
+                "{{solicitud_id}}",
+                "seguimientos"
+              ]
+            },
+            "description": "Agrega una nota de seguimiento a una solicitud pendiente (no cambia el estado, RN-030).\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comentario\": \"Proveedor confirma entrega mañana.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/anular",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/anular",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "anular"
+              ]
+            },
+            "description": "Cancelación administrativa por imposibilidad (p. ej. recursos que no llegarán); se notifica al reportante.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E08, E09, E18 → E17",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"El laboratorio será remodelado y el punto se elimina.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "E09 · Verificación de calidad y cierre",
+      "item": [
+        {
+          "name": "GET /verificacion/pendientes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/verificacion/pendientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "verificacion",
+                "pendientes"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Por defecto 20."
+                }
+              ]
+            },
+            "description": "Bandeja de verificación: incidencias en E12, las más antiguas primero.\n\nRoles: R06 Verificador de intervenciones, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/verificar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/verificar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "verificar"
+              ]
+            },
+            "description": "Dictamen de calidad conforme.\n\nRoles: R06 Verificador de intervenciones, R07 Administrador de plataforma\n\nEstado: E12 → E14 (la categoría requiere confirmación) · E12 → E15 (no la requiere)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"criterios\": [\n    {\n      \"criterio\": \"Luminaria enciende\",\n      \"cumple\": true\n    },\n    {\n      \"criterio\": \"Difusor instalado\",\n      \"cumple\": true\n    }\n  ],\n  \"observaciones\": \"Trabajo conforme.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/rechazar-verificacion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/rechazar-verificacion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "rechazar-verificacion"
+              ]
+            },
+            "description": "Dictamen no conforme: vuelve a corrección y suma un ciclo de reproceso.\n\nRoles: R06 Verificador de intervenciones, R07 Administrador de plataforma\n\nEstado: E12 → E13",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"criterios\": [\n    {\n      \"criterio\": \"Luminaria enciende\",\n      \"cumple\": true\n    },\n    {\n      \"criterio\": \"Difusor instalado\",\n      \"cumple\": false\n    }\n  ],\n  \"motivo_rechazo\": \"Falta reinstalar el difusor.\",\n  \"correccion_requerida\": \"Instalar el difusor de la luminaria.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/planificar-correccion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/planificar-correccion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "planificar-correccion"
+              ]
+            },
+            "description": "Programa la corrección tras un rechazo de verificación o de conformidad.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E13 → E10",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha_programada\": \"{{manana}}\",\n  \"hora_inicio\": \"08:00\",\n  \"hora_fin\": \"09:00\",\n  \"observaciones\": \"Instalar difusor.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /incidencias/{incidencia}/cierre-administrativo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/cierre-administrativo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "cierre-administrativo"
+              ]
+            },
+            "description": "Cierra por inactividad del reportante cuando venció el plazo de confirmación.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma\n\nEstado: E14 → E15",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notas\": \"Sin respuesta del reportante.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "E10 · Consola, trazabilidad, SLA y analítica",
+      "item": [
+        {
+          "name": "GET /consola/incidencias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/consola/incidencias?per_page=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "consola",
+                "incidencias"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "2"
+                },
+                {
+                  "key": "estado",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Códigos separados por coma."
+                },
+                {
+                  "key": "sede_id",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "edificio_id",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "categoria_id",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "prioridad",
+                  "value": "",
+                  "disabled": true,
+                  "description": "CRITICA, ALTA, MEDIA o BAJA."
+                },
+                {
+                  "key": "tecnico_id",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Código o resumen."
+                },
+                {
+                  "key": "fecha_desde",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "fecha_hasta",
+                  "value": "",
+                  "disabled": true,
+                  "description": "≥ fecha_desde."
+                },
+                {
+                  "key": "riesgo_inmediato",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "page",
+                  "value": "",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Consola de incidencias con filtros combinables, tiempo de atención y semáforo SLA por fila. R04 solo ve las suyas.\n\nRoles: R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "GET /incidencias/{incidencia}/historial",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/incidencias/{{incidencia_id}}/historial",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "incidencias",
+                "{{incidencia_id}}",
+                "historial"
+              ],
+              "query": [
+                {
+                  "key": "categoria",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Opcional: ESTADO, ACTIVIDAD, FORENSE o COMUNICACION."
+                }
+              ]
+            },
+            "description": "Línea de tiempo de auditoría. R01 recibe solo los eventos públicos (`alcance: PUBLICO`); los demás roles, la completa.\n\nRoles: R01 Reportante, R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R04 Técnico de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "GET /consola/plazos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/consola/plazos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "consola",
+                "plazos"
+              ],
+              "query": [
+                {
+                  "key": "estado_sla",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Opcional: EN_PLAZO, PROXIMA_A_VENCER o VENCIDA."
+                }
+              ]
+            },
+            "description": "Incidencias abiertas con su estado SLA (EN_PLAZO, PROXIMA_A_VENCER, VENCIDA) y un resumen con los totales.\n\nRoles: R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "GET /analitica/metricas-basicas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/analitica/metricas-basicas?periodo=mes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analitica",
+                "metricas-basicas"
+              ],
+              "query": [
+                {
+                  "key": "periodo",
+                  "value": "mes"
+                },
+                {
+                  "key": "desde",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Obligatorio si `periodo=rango`."
+                },
+                {
+                  "key": "hasta",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Obligatorio si `periodo=rango`, ≥ desde."
+                }
+              ]
+            },
+            "description": "Indicadores del periodo: totales por estado y prioridad, MTTR, cumplimiento SLA y fallas recurrentes.\n\nRoles: R02 Gestor de incidencias, R03 Coordinador de mantenimiento, R05 Responsable de autorizaciones, R06 Verificador de intervenciones, R07 Administrador de plataforma"
+          }
+        }
+      ]
+    },
+    {
+      "name": "E11 · Parametrización (ubicaciones, categorías y parámetros)",
+      "item": [
+        {
+          "name": "GET /admin/ubicaciones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/ubicaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "ubicaciones"
+              ]
+            },
+            "description": "Árbol completo de ubicaciones, incluidas las inactivas.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /admin/ubicaciones/{nivel}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/ubicaciones/{{nivel}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "ubicaciones",
+                "{{nivel}}"
+              ]
+            },
+            "description": "Crea una sede, edificio, piso o espacio. `{nivel}`: `sedes`, `edificios`, `pisos` o `espacios`.\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sede_id\": 1,\n  \"codigo\": \"BLOQUE-D\",\n  \"nombre\": \"Bloque D\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('ubicacion_id', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /admin/ubicaciones/{nivel}/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/ubicaciones/{{nivel}}/{{ubicacion_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "ubicaciones",
+                "{{nivel}}",
+                "{{ubicacion_id}}"
+              ]
+            },
+            "description": "Edita una ubicación (mismos campos que al crear, todos opcionales).\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Bloque S - Laboratorios\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH /admin/ubicaciones/{nivel}/{id}/estado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/ubicaciones/{{nivel}}/{{ubicacion_id}}/estado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "ubicaciones",
+                "{{nivel}}",
+                "{{ubicacion_id}}",
+                "estado"
+              ]
+            },
+            "description": "Activa o inactiva una ubicación (deja de salir en el árbol activo).\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": false,\n  \"motivo\": \"En remodelación.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /admin/ubicaciones/{nivel}/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/ubicaciones/{{nivel}}/{{ubicacion_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "ubicaciones",
+                "{{nivel}}",
+                "{{ubicacion_id}}"
+              ]
+            },
+            "description": "Elimina una ubicación sin incidencias ni niveles dependientes. Responde 204.\n\nRoles: R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "GET /admin/categorias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/categorias",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "categorias"
+              ]
+            },
+            "description": "Categorías y subcategorías, incluidas las inactivas.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "POST /admin/categorias",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/categorias",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "categorias"
+              ]
+            },
+            "description": "Crea una categoría o, con `categoria_padre_id`, una subcategoría.\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"JARDINERIA\",\n  \"nombre\": \"Jardinería\",\n  \"nivel_riesgo_base\": \"BAJO\",\n  \"requiere_confirmacion_cierre\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('categoria_admin_id', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /admin/categorias/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/categorias/{{categoria_admin_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "categorias",
+                "{{categoria_admin_id}}"
+              ]
+            },
+            "description": "Edita una categoría (mismos campos, todos opcionales).\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Poda, riego y zonas verdes.\",\n  \"exige_evidencia_fotografica\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /admin/parametros-proceso",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/parametros-proceso",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "parametros-proceso"
+              ]
+            },
+            "description": "Metas SLA por prioridad y plazo de aclaraciones (lectura para R03).\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "PUT /admin/parametros-proceso",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/parametros-proceso",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "parametros-proceso"
+              ]
+            },
+            "description": "Actualiza metas SLA por prioridad y el plazo de aclaraciones; invalida la caché.\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prioridades\": [\n    {\n      \"codigo\": \"BAJA\",\n      \"horas_primera_respuesta\": 16,\n      \"horas_resolucion\": 80\n    }\n  ],\n  \"plazo_aclaracion_dias_habiles\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /admin/parametros",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/parametros",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "parametros"
+              ]
+            },
+            "description": "Matriz de prioridad, metas SLA y parámetros generales del sistema.\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma"
+          }
+        },
+        {
+          "name": "PUT /admin/parametros",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/parametros",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "parametros"
+              ]
+            },
+            "description": "Actualiza la matriz Impacto × Urgencia, las metas SLA o los parámetros; aplica en caliente y queda auditado (valor anterior y nuevo).\n\nRoles: R07 Administrador de plataforma",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"matriz\": [\n    {\n      \"impacto\": \"BAJO\",\n      \"urgencia\": \"BAJA\",\n      \"prioridad\": \"BAJA\"\n    }\n  ],\n  \"parametros\": {\n    \"MAXIMO_REAPERTURAS\": 2\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /admin/parametros/historial",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Active-Role",
+                "value": "{{rol_activo}}",
+                "description": "Vacío = primer rol del usuario. Ej.: R03."
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/parametros/historial?per_page=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "parametros",
+                "historial"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": "Eventos de auditoría de configuración (cambios de parámetros, SLA, matriz, categorías, ubicaciones).\n\nRoles: R03 Coordinador de mantenimiento, R07 Administrador de plataforma"
+          }
+        }
+      ]
+    }
+  ]
+}

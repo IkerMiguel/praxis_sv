@@ -136,6 +136,7 @@ it('restablece la contraseña con un enlace de un solo uso sin revelar si el cor
 
     $this->postJson('/api/v1/auth/restablecer-password', ['token' => $token, 'password' => 'Otra*Clave9', 'password_confirmation' => 'Otra*Clave9'])
         ->assertStatus(410)
+        ->assertJsonPath('type', 'https://praxis.ecci.edu.co/problemas/enlace-expirado')
         ->assertJsonPath('detail', 'El enlace de restablecimiento ha expirado. Por favor solicite uno nuevo');
 });
 
@@ -149,4 +150,22 @@ it('bloquea el enlace de recuperación vencido a los 30 minutos', function () {
 
     $this->getJson("/api/v1/auth/restablecer-password/{$token}")->assertStatus(410);
     expect(TokenRecuperacion::query()->value('token_hash'))->toBe(hash('sha256', $token));
+});
+
+it('permite al cliente web enviar la cookie de refresh desde su origen (CORS con credenciales)', function () {
+    $origen = config('praxis.frontend_url');
+
+    $this->call('OPTIONS', '/api/v1/auth/refresh', server: [
+        'HTTP_ORIGIN' => $origen,
+        'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'POST',
+    ])
+        ->assertHeader('Access-Control-Allow-Origin', $origen)
+        ->assertHeader('Access-Control-Allow-Credentials', 'true');
+
+    $ajeno = $this->call('OPTIONS', '/api/v1/auth/refresh', server: [
+        'HTTP_ORIGIN' => 'https://sitio-ajeno.com',
+        'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'POST',
+    ]);
+
+    expect($ajeno->headers->get('Access-Control-Allow-Origin'))->not->toBe('https://sitio-ajeno.com');
 });

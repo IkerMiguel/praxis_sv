@@ -86,6 +86,8 @@ php artisan serve
 
 ## Uso de la API
 
+La referencia completa para el front está en **[docs/API.md](docs/API.md)**: los 87 endpoints agrupados por épica (roles, cambio de estado, campos con su validación, ejemplo de respuesta y errores), la tabla de los 18 estados con sus transiciones y los usuarios de prueba. La colección de Postman equivalente está en [docs/praxis.postman_collection.json](docs/praxis.postman_collection.json) (variable `base_url`; el token se guarda al ejecutar el login).
+
 - Prefijo: `/api/v1`. Respuestas JSON; errores en formato **Problem Details (RFC 7807)** con `Content-Type: application/problem+json`.
 - `POST /api/v1/auth/login` devuelve un `access_token` (Bearer, 15 minutos) y deja el refresh token en la cookie HttpOnly `praxis_refresh` (rotativo; `POST /api/v1/auth/refresh`).
 - Rol activo: cabecera `X-Active-Role: R0x`. Debe ser uno de los roles del usuario; si se omite se usa su primer rol. Las operaciones validan el rol activo contra la matriz D09 (403 si no corresponde).
@@ -142,7 +144,7 @@ En cada push/PR a `main`, `master` o `dev` corre `.github/workflows/ci.yml`:
    php artisan migrate --force && php artisan config:cache
    ```
 5. En Vercel (`praxis_client`) definir `NEXT_PUBLIC_API_URL=https://tu-servicio.up.railway.app`.
-6. Configurar CORS en Laravel para el dominio de Vercel y `PRAXIS_REFRESH_COOKIE_SAMESITE=none` con `PRAXIS_REFRESH_COOKIE_SECURE=true`.
+6. Poner el dominio de Vercel en `FRONTEND_URL` (es el origen que CORS acepta con credenciales; admite varios separados por coma) y usar `PRAXIS_REFRESH_COOKIE_SAMESITE=none` con `PRAXIS_REFRESH_COOKIE_SECURE=true`.
 
 ## Scripts útiles
 
