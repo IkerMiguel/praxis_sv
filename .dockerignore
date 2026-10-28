@@ -1,4 +1,5 @@
 .git
+.github
 .env
 .idea
 .vscode
@@ -8,6 +9,7 @@ storage/logs/*
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
+storage/app/private/*
 bootstrap/cache/*.php
 public/build
 public/hot

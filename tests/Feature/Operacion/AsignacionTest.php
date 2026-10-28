@@ -2,7 +2,9 @@
 
 use App\Enums\EstadoIncidencia;
 use App\Enums\Rol;
+use App\Exceptions\ReglaNegocioException;
 use App\Models\AsignacionIncidencia;
+use App\Models\CategoriaIncidencia;
 use App\Models\EventoAuditoria;
 use App\Models\Incidencia;
 use App\Models\NotificacionPlataforma;
@@ -44,7 +46,7 @@ it('lista solo técnicos activos de la especialidad con su carga actual', functi
     cargarTecnico($this->cerrajero, 3);
     User::factory()->tecnico('ELECTRICIDAD')->create();
     User::factory()->tecnico('CERRAJERIA')->inactivo()->create();
-    $categoria = App\Models\CategoriaIncidencia::query()->where('codigo', 'CERRAJERIA')->value('id');
+    $categoria = CategoriaIncidencia::query()->where('codigo', 'CERRAJERIA')->value('id');
 
     $this->comoRol($this->coordinador, Rol::Coordinador)
         ->getJson("/api/v1/tecnicos/disponibles?categoria_id={$categoria}")
@@ -117,5 +119,5 @@ it('impide iniciar inspección o atención sin responsable asignado (RN-021)', f
     app(ContextoRol::class)->establecer(Rol::Administrador);
 
     expect(fn () => app(MaquinaEstados::class)->transicionar($incidencia, EstadoIncidencia::EnDiagnostico, $this->coordinador))
-        ->toThrow(App\Exceptions\ReglaNegocioException::class, 'RN-021');
+        ->toThrow(ReglaNegocioException::class, 'RN-021');
 });

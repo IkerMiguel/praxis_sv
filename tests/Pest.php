@@ -1,5 +1,11 @@
 <?php
 
+use App\Enums\EstadoIncidencia;
+use App\Models\ActividadMantenimiento;
+use App\Models\Diagnostico;
+use App\Models\Evidencia;
+use App\Models\Incidencia;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,15 +32,15 @@ pest()->extend(TestCase::class)
 /**
  * Incidencia en E07 con un diagnóstico ya registrado por el técnico asignado.
  */
-function incidenciaConDiagnostico(App\Models\User $tecnico, bool $confirmada = true, array $atributos = []): App\Models\Incidencia
+function incidenciaConDiagnostico(User $tecnico, bool $confirmada = true, array $atributos = []): Incidencia
 {
-    $incidencia = App\Models\Incidencia::factory()
-        ->enEstado(App\Enums\EstadoIncidencia::EnDiagnostico)
+    $incidencia = Incidencia::factory()
+        ->enEstado(EstadoIncidencia::EnDiagnostico)
         ->asignadaA($tecnico)
         ->categoria('CERRAJERIA')
         ->create($atributos);
 
-    App\Models\Diagnostico::create([
+    Diagnostico::create([
         'incidencia_id' => $incidencia->id,
         'tecnico_id' => $tecnico->id,
         'fecha_inicio_inspeccion' => now()->subHour(),
@@ -44,7 +50,7 @@ function incidenciaConDiagnostico(App\Models\User $tecnico, bool $confirmada = t
         'descripcion_problema' => 'Desgaste del mecanismo.',
         'intervencion_propuesta' => 'Reemplazo de piezas.',
         'justificacion_no_confirmada' => $confirmada ? null : 'El elemento opera con normalidad.',
-        'estado' => App\Models\Diagnostico::REGISTRADO,
+        'estado' => Diagnostico::REGISTRADO,
     ]);
 
     return $incidencia;
@@ -53,15 +59,15 @@ function incidenciaConDiagnostico(App\Models\User $tecnico, bool $confirmada = t
 /**
  * Incidencia en E11 con la intervención iniciada por el técnico.
  */
-function incidenciaEnAtencion(App\Models\User $tecnico, array $atributos = []): App\Models\Incidencia
+function incidenciaEnAtencion(User $tecnico, array $atributos = []): Incidencia
 {
-    $incidencia = App\Models\Incidencia::factory()
-        ->enEstado(App\Enums\EstadoIncidencia::EnAtencion)
+    $incidencia = Incidencia::factory()
+        ->enEstado(EstadoIncidencia::EnAtencion)
         ->asignadaA($tecnico)
         ->categoria('CERRAJERIA')
         ->create($atributos);
 
-    App\Models\ActividadMantenimiento::create([
+    ActividadMantenimiento::create([
         'incidencia_id' => $incidencia->id,
         'tecnico_ejecutor_id' => $tecnico->id,
         'fecha_inicio' => now()->subHour(),
@@ -73,15 +79,15 @@ function incidenciaEnAtencion(App\Models\User $tecnico, array $atributos = []): 
 /**
  * Incidencia en E12 con la intervención registrada y su evidencia de ejecución.
  */
-function incidenciaPendienteVerificacion(App\Models\User $tecnico, string $categoria = 'CERRAJERIA', array $atributos = []): App\Models\Incidencia
+function incidenciaPendienteVerificacion(User $tecnico, string $categoria = 'CERRAJERIA', array $atributos = []): Incidencia
 {
-    $incidencia = App\Models\Incidencia::factory()
-        ->enEstado(App\Enums\EstadoIncidencia::PendienteVerificacion)
+    $incidencia = Incidencia::factory()
+        ->enEstado(EstadoIncidencia::PendienteVerificacion)
         ->asignadaA($tecnico)
         ->categoria($categoria)
         ->create($atributos);
 
-    $actividad = App\Models\ActividadMantenimiento::create([
+    $actividad = ActividadMantenimiento::create([
         'incidencia_id' => $incidencia->id,
         'tecnico_ejecutor_id' => $tecnico->id,
         'fecha_inicio' => now()->subHours(2),
@@ -90,7 +96,7 @@ function incidenciaPendienteVerificacion(App\Models\User $tecnico, string $categ
         'actividades_realizadas' => 'Reparación completa.',
     ]);
 
-    App\Models\Evidencia::create([
+    Evidencia::create([
         'incidencia_id' => $incidencia->id,
         'etapa' => 'EJECUCION',
         'referencia_tipo' => 'actividad_mantenimiento',

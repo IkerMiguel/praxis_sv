@@ -1,4 +1,61 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: praxis_sv-app
+    container_name: praxis_sv_app
+    restart: unless-stopped
+    ports:
+      - "8000:8080"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: praxis_sv
+      DB_USERNAME: praxis
+      DB_PASSWORD: praxis_secret
+      CACHE_STORE: database
+      SESSION_DRIVER: database
+      QUEUE_CONNECTION: database
+      LOG_CHANNEL: stderr
+      FRONTEND_URL: http://localhost:3000
+      PRAXIS_REFRESH_COOKIE_SECURE: "false"
+      PRAXIS_REFRESH_COOKIE_SAMESITE: lax
+    volumes:
+      - praxis_sv_storage:/var/www/html/storage/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/up > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  scheduler:
+    image: praxis_sv-app
+    container_name: praxis_sv_scheduler
+    restart: unless-stopped
+    command: ["php", "/var/www/html/artisan", "schedule:work"]
+    environment:
+      APP_ENV: local
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: praxis_sv
+      DB_USERNAME: praxis
+      DB_PASSWORD: praxis_secret
+      CACHE_STORE: database
+      LOG_CHANNEL: stderr
+    depends_on:
+      app:
+        condition: service_healthy
+
   postgres:
     image: postgres:16-alpine
     container_name: praxis_sv_postgres
@@ -20,3 +77,4 @@ services:
 
 volumes:
   praxis_sv_pgdata:
+  praxis_sv_storage:

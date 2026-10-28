@@ -13,8 +13,8 @@ it('bloquea UPDATE y DELETE sobre la bitácora a nivel de modelo y de base de da
 
     expect(fn () => $evento->update(['motivo' => 'alterado']))->toThrow(LogicException::class)
         ->and(fn () => $evento->delete())->toThrow(LogicException::class)
-        ->and(fn () => DB::table('eventos_auditoria')->where('id', $evento->id)->update(['motivo' => 'x']))->toThrow(QueryException::class)
-        ->and(fn () => DB::table('eventos_auditoria')->delete())->toThrow(QueryException::class);
+        ->and(fn () => DB::transaction(fn () => DB::table('eventos_auditoria')->where('id', $evento->id)->update(['motivo' => 'x'])))->toThrow(QueryException::class)
+        ->and(fn () => DB::transaction(fn () => DB::table('eventos_auditoria')->delete()))->toThrow(QueryException::class);
 
     expect(EventoAuditoria::query()->count())->toBe(1);
 });

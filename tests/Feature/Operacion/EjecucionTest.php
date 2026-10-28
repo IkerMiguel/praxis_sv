@@ -3,7 +3,9 @@
 use App\Enums\EstadoIncidencia;
 use App\Enums\Rol;
 use App\Models\ActividadMantenimiento;
+use App\Models\EventoAuditoria;
 use App\Models\Incidencia;
+use App\Models\NotificacionPlataforma;
 use App\Models\PlanIntervencion;
 use App\Models\Suspension;
 use App\Models\User;
@@ -65,7 +67,7 @@ it('registra la intervención con materiales y evidencias y pasa a verificación
     expect($actividad->tiempo_invertido_minutos)->toBe(50)
         ->and($actividad->materiales)->toHaveCount(1)
         ->and($incidencia->evidencias()->where('etapa', 'EJECUCION')->count())->toBe(2)
-        ->and(App\Models\NotificacionPlataforma::query()->where('usuario_destino_id', $verificador->id)->exists())->toBeTrue();
+        ->and(NotificacionPlataforma::query()->where('usuario_destino_id', $verificador->id)->exists())->toBeTrue();
 });
 
 it('suspende con causa y condiciones de reanudación y luego reanuda conservando la pausa (E11 -> E18 -> E11)', function () {
@@ -99,7 +101,7 @@ it('suspende con causa y condiciones de reanudación y luego reanuda conservando
     expect($suspension->estado_origen)->toBe('E11')
         ->and($suspension->estado_destino)->toBe('E11')
         ->and($suspension->fecha_reanudacion)->not->toBeNull()
-        ->and(App\Models\EventoAuditoria::query()->where('tipo_evento', 'REANUDACION')->first()->datos['minutos_suspendida'])->toBeGreaterThanOrEqual(120);
+        ->and(EventoAuditoria::query()->where('tipo_evento', 'REANUDACION')->first()->datos['minutos_suspendida'])->toBeGreaterThanOrEqual(120);
 });
 
 it('reanuda hacia programada con una nueva fecha de intervención (E18 -> E10)', function () {

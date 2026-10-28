@@ -3,6 +3,7 @@
 use App\Enums\EstadoIncidencia;
 use App\Enums\Rol;
 use App\Models\Diagnostico;
+use App\Models\EventoAuditoria;
 use App\Models\Incidencia;
 use App\Models\User;
 use App\Support\ResultadoCierre;
@@ -67,7 +68,7 @@ it('programa la intervención (E07 -> E10) y conserva la fecha original al repro
         ->patchJson("/api/v1/incidencias/{$incidencia->id}/reprogramar", ['fecha_programada' => now()->addDays(3)->toDateString(), 'hora_inicio' => '14:00', 'hora_fin' => '16:00', 'motivo' => 'Corte imprevisto del suministro de energía'])
         ->assertOk();
 
-    $evento = App\Models\EventoAuditoria::query()->where('tipo_evento', 'REPROGRAMACION')->firstOrFail();
+    $evento = EventoAuditoria::query()->where('tipo_evento', 'REPROGRAMACION')->firstOrFail();
     expect($evento->datos['anterior']['fecha_programada'])->toBe($manana)->and($evento->motivo)->toBe('Corte imprevisto del suministro de energía');
 });
 

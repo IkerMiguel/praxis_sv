@@ -5,6 +5,7 @@ use App\Enums\Rol;
 use App\Models\Incidencia;
 use App\Models\User;
 use App\Support\ResultadoCierre;
+use Database\Seeders\UbicacionesSeeder;
 
 beforeEach(function () {
     $this->reportante = $this->usuarioConRol(Rol::Reportante);
@@ -108,7 +109,7 @@ it('expone el glosario de estados D07 indicando cuándo debe intervenir el repor
 });
 
 it('entrega el árbol de ubicaciones activas y las categorías con subcategorías', function () {
-    $this->seed(Database\Seeders\UbicacionesSeeder::class);
+    $this->seed(UbicacionesSeeder::class);
 
     $this->comoRol($this->reportante, Rol::Reportante)
         ->getJson('/api/v1/catalogo/ubicaciones/arbol-activo')
