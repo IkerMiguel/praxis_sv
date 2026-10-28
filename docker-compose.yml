@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: praxis_sv_postgres
+    restart: unless-stopped
+    ports:
+      # 5433 en el host evita choque si ya hay otro Postgres en 5432
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: praxis_sv
+      POSTGRES_USER: praxis
+      POSTGRES_PASSWORD: praxis_secret
+    volumes:
+      - praxis_sv_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U praxis -d praxis_sv"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  praxis_sv_pgdata:
