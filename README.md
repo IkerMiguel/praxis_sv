@@ -86,6 +86,8 @@ php artisan serve
 
 ## Uso de la API
 
+La API responde siempre en español (`APP_LOCALE=es`): validaciones con nombres de campo legibles (`lang/es/validation.php`) y errores 401, 403, 404, 405 y 429 en formato Problem Details.
+
 La referencia completa para el front está en **[docs/API.md](docs/API.md)**: los 87 endpoints agrupados por épica (roles, cambio de estado, campos con su validación, ejemplo de respuesta y errores), la tabla de los 18 estados con sus transiciones y los usuarios de prueba. La colección de Postman equivalente está en [docs/praxis.postman_collection.json](docs/praxis.postman_collection.json) (variable `base_url`; el token se guarda al ejecutar el login).
 
 - Prefijo: `/api/v1`. Respuestas JSON; errores en formato **Problem Details (RFC 7807)** con `Content-Type: application/problem+json`.
@@ -116,6 +118,9 @@ Pest usa SQLite en memoria por defecto (no necesita Docker):
 ```bash
 php artisan test
 ```
+
+- `tests/Unit`: reglas puras sin base de datos ni framework (horas hábiles y semáforo SLA, matriz ITIL, transiciones D07, formato del ticket, política de reapertura, deep-link del login). Corren en milisegundos con `php artisan test tests/Unit`.
+- `tests/Feature`: endpoints completos con base de datos.
 
 Contra PostgreSQL (lo que hace el job `postgres` del CI):
 

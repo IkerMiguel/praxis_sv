@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\MatrizPrioridad;
 use App\Models\Prioridad;
+use App\Support\MatrizItil;
 use Illuminate\Database\Seeder;
 
 class PrioridadesSeeder extends Seeder
@@ -32,13 +33,7 @@ class PrioridadesSeeder extends Seeder
 
         $ids = Prioridad::query()->pluck('id', 'codigo');
 
-        $matriz = [
-            'ALTO' => ['ALTA' => 'CRITICA', 'MEDIA' => 'ALTA', 'BAJA' => 'MEDIA'],
-            'MEDIO' => ['ALTA' => 'ALTA', 'MEDIA' => 'BAJA', 'BAJA' => 'BAJA'],
-            'BAJO' => ['ALTA' => 'MEDIA', 'MEDIA' => 'BAJA', 'BAJA' => 'BAJA'],
-        ];
-
-        foreach ($matriz as $impacto => $fila) {
+        foreach (MatrizItil::POR_DEFECTO as $impacto => $fila) {
             foreach ($fila as $urgencia => $prioridad) {
                 MatrizPrioridad::updateOrCreate(
                     ['impacto' => $impacto, 'urgencia' => $urgencia],

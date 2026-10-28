@@ -235,13 +235,22 @@ class AutenticacionService
      */
     public function rutaPostLogin(User $usuario, ?string $returnUrl): string
     {
-        if ($returnUrl !== null && preg_match('#^/(?!/)[^\s\\\\]*$#', $returnUrl) === 1) {
+        if (self::esRutaInterna($returnUrl)) {
             return $returnUrl;
         }
 
         $codigo = $usuario->codigosRol()[0] ?? Rol::Reportante->value;
 
         return Rol::from($codigo)->rutaInicio();
+    }
+
+    /**
+     * Solo se acepta como deep-link una ruta interna del front ("/algo"), nunca "//host" ni URLs
+     * absolutas, para evitar redirecciones abiertas (HU-1.1).
+     */
+    public static function esRutaInterna(?string $ruta): bool
+    {
+        return $ruta !== null && preg_match('#^/(?!/)[^\s\\\\]*$#', $ruta) === 1;
     }
 
     private function emitirAccessToken(User $usuario): string

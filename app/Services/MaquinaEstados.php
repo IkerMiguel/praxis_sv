@@ -130,9 +130,31 @@ class MaquinaEstados
 
     public function permite(E $origen, E $destino, ?string $rol): bool
     {
+        return self::admite($origen, $destino, $rol);
+    }
+
+    /**
+     * Regla pura de D07: la transición existe en la matriz y el rol figura entre los autorizados.
+     */
+    public static function admite(E $origen, E $destino, ?string $rol): bool
+    {
         $roles = self::matriz()[$origen->value][$destino->value] ?? null;
 
         return $roles !== null && $rol !== null && in_array($rol, $roles, true);
+    }
+
+    /**
+     * Destinos alcanzables desde un estado con un rol, sin contexto de petición.
+     *
+     * @return list<string>
+     */
+    public static function destinosDesde(E $origen, ?string $rol): array
+    {
+        return collect(self::matriz()[$origen->value] ?? [])
+            ->filter(fn (array $roles) => $rol !== null && in_array($rol, $roles, true))
+            ->keys()
+            ->values()
+            ->all();
     }
 
     /**
@@ -142,13 +164,7 @@ class MaquinaEstados
      */
     public function destinosDisponibles(Incidencia $incidencia): array
     {
-        $rol = $this->contextoRol->codigo();
-
-        return collect(self::matriz()[$incidencia->estado_codigo->value] ?? [])
-            ->filter(fn (array $roles) => $rol !== null && in_array($rol, $roles, true))
-            ->keys()
-            ->values()
-            ->all();
+        return self::destinosDesde($incidencia->estado_codigo, $this->contextoRol->codigo());
     }
 
     /**

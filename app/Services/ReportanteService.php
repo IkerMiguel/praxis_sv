@@ -12,6 +12,7 @@ use App\Models\Incidencia;
 use App\Models\SolicitudAclaracion;
 use App\Models\User;
 use App\Support\Parametro;
+use App\Support\PoliticaReapertura;
 use App\Support\ResultadoCierre;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -113,28 +114,17 @@ class ReportanteService
      */
     public function evaluarReapertura(Incidencia $incidencia): array
     {
-        $maximo = $this->parametros->entero(Parametro::MAXIMO_REAPERTURAS);
-        $restantes = max(0, $maximo - $incidencia->numero_reaperturas);
+        $fechaCierre = $incidencia->fecha_cierre === null ? null : CarbonImmutable::parse($incidencia->fecha_cierre);
 
-        if (! $incidencia->estaEn(E::Cerrada) || $incidencia->fecha_cierre === null) {
-            return ['permitido' => false, 'motivo' => 'Solo se pueden reabrir incidencias cerradas.', 'fecha_limite' => null, 'reaperturas_restantes' => $restantes];
-        }
-
-        if ($incidencia->resultado_final_cierre === ResultadoCierre::VINCULADA_POR_DUPLICIDAD) {
-            return ['permitido' => false, 'motivo' => 'La solicitud fue unificada con la incidencia principal; consulte su avance.', 'fecha_limite' => null, 'reaperturas_restantes' => 0];
-        }
-
-        $limite = $this->sla->sumarDiasHabiles(CarbonImmutable::parse($incidencia->fecha_cierre), $this->parametros->entero(Parametro::VENTANA_REAPERTURA_DIAS_HABILES));
-
-        if (now()->greaterThan($limite)) {
-            return ['permitido' => false, 'motivo' => 'La ventana de garantía para reabrir la solicitud ya expiró.', 'fecha_limite' => $limite->toIso8601String(), 'reaperturas_restantes' => $restantes];
-        }
-
-        if ($restantes === 0) {
-            return ['permitido' => false, 'motivo' => "La solicitud alcanzó el máximo de {$maximo} reaperturas permitidas.", 'fecha_limite' => $limite->toIso8601String(), 'reaperturas_restantes' => 0];
-        }
-
-        return ['permitido' => true, 'motivo' => null, 'fecha_limite' => $limite->toIso8601String(), 'reaperturas_restantes' => $restantes];
+        return PoliticaReapertura::evaluar(
+            $incidencia->estado_codigo,
+            $fechaCierre,
+            $incidencia->resultado_final_cierre,
+            (int) $incidencia->numero_reaperturas,
+            $this->parametros->entero(Parametro::MAXIMO_REAPERTURAS),
+            $fechaCierre === null ? null : $this->sla->sumarDiasHabiles($fechaCierre, $this->parametros->entero(Parametro::VENTANA_REAPERTURA_DIAS_HABILES)),
+            now(),
+        );
     }
 
     /**

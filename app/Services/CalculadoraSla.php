@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\EstadoSla;
 use App\Models\Feriado;
 use App\Models\Incidencia;
+use App\Support\JornadaHabil;
 use App\Support\Parametro;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -24,33 +25,7 @@ class CalculadoraSla
      */
     public function sumarHorasHabiles(CarbonInterface $inicio, float $horas): CarbonImmutable
     {
-        $restante = (int) round($horas * 60);
-        $cursor = $this->aZonaLocal($inicio);
-
-        for ($iteraciones = 0; $iteraciones < 3660; $iteraciones++) {
-            [$inicioJornada, $finJornada] = $this->jornada($cursor);
-
-            if (! $this->esDiaHabil($cursor) || $cursor->greaterThanOrEqualTo($finJornada)) {
-                $cursor = $this->siguienteInicioJornada($cursor);
-
-                continue;
-            }
-
-            if ($cursor->lessThan($inicioJornada)) {
-                $cursor = $inicioJornada;
-            }
-
-            $disponible = (int) $cursor->diffInMinutes($finJornada);
-
-            if ($restante <= $disponible) {
-                return $cursor->addMinutes($restante)->utc();
-            }
-
-            $restante -= $disponible;
-            $cursor = $this->siguienteInicioJornada($cursor);
-        }
-
-        return $cursor->utc();
+        return $this->jornadaHabil()->sumarHoras($inicio, $horas);
     }
 
     /**
@@ -58,38 +33,12 @@ class CalculadoraSla
      */
     public function minutosHabilesEntre(CarbonInterface $desde, CarbonInterface $hasta): int
     {
-        $cursor = $this->aZonaLocal($desde);
-        $fin = $this->aZonaLocal($hasta);
-
-        if ($fin->lessThanOrEqualTo($cursor)) {
-            return 0;
-        }
-
-        $total = 0;
-
-        for ($iteraciones = 0; $iteraciones < 3660 && $cursor->lessThan($fin); $iteraciones++) {
-            [$inicioJornada, $finJornada] = $this->jornada($cursor);
-
-            if ($this->esDiaHabil($cursor)) {
-                $tramoInicio = $cursor->max($inicioJornada);
-                $tramoFin = $fin->min($finJornada);
-
-                if ($tramoFin->greaterThan($tramoInicio)) {
-                    $total += (int) $tramoInicio->diffInMinutes($tramoFin);
-                }
-            }
-
-            $cursor = $this->siguienteInicioJornada($cursor);
-        }
-
-        return $total;
+        return $this->jornadaHabil()->minutosEntre($desde, $hasta);
     }
 
     public function sumarDiasHabiles(CarbonInterface $inicio, int $dias): CarbonImmutable
     {
-        $horasPorDia = $this->parametros->entero(Parametro::JORNADA_HORA_FIN) - $this->parametros->entero(Parametro::JORNADA_HORA_INICIO);
-
-        return $this->sumarHorasHabiles($inicio, $dias * $horasPorDia);
+        return $this->jornadaHabil()->sumarDias($inicio, $dias);
     }
 
     /**
@@ -133,11 +82,7 @@ class CalculadoraSla
         $porcentaje = round($consumido * 100 / $total, 1);
         $umbral = $this->parametros->entero(Parametro::UMBRAL_ALERTA_SLA_PORCENTAJE);
 
-        $estado = match (true) {
-            $porcentaje > 100 => EstadoSla::Vencida,
-            $porcentaje >= $umbral => EstadoSla::ProximaAVencer,
-            default => EstadoSla::EnPlazo,
-        };
+        $estado = EstadoSla::segunConsumo($porcentaje, $umbral);
 
         $restantes = $total - $consumido;
 
@@ -193,30 +138,17 @@ class CalculadoraSla
         ];
     }
 
-    private function aZonaLocal(CarbonInterface $fecha): CarbonImmutable
-    {
-        return CarbonImmutable::instance($fecha)->setTimezone(config('praxis.zona_horaria'));
-    }
-
     /**
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     * Jornada hábil vigente según los parámetros, la zona operativa y los feriados registrados.
      */
-    private function jornada(CarbonImmutable $dia): array
+    private function jornadaHabil(): JornadaHabil
     {
-        $inicio = $this->parametros->entero(Parametro::JORNADA_HORA_INICIO);
-        $fin = $this->parametros->entero(Parametro::JORNADA_HORA_FIN);
-
-        return [$dia->setTime($inicio, 0), $dia->setTime($fin, 0)];
-    }
-
-    private function siguienteInicioJornada(CarbonImmutable $dia): CarbonImmutable
-    {
-        return $dia->addDay()->setTime($this->parametros->entero(Parametro::JORNADA_HORA_INICIO), 0);
-    }
-
-    private function esDiaHabil(CarbonImmutable $dia): bool
-    {
-        return ! $dia->isWeekend() && ! in_array($dia->toDateString(), $this->feriados(), true);
+        return new JornadaHabil(
+            $this->parametros->entero(Parametro::JORNADA_HORA_INICIO),
+            $this->parametros->entero(Parametro::JORNADA_HORA_FIN),
+            $this->feriados(),
+            (string) config('praxis.zona_horaria'),
+        );
     }
 
     /**

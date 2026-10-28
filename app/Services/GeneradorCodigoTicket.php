@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\DB;
  */
 class GeneradorCodigoTicket
 {
+    /**
+     * Formato TKT-AAAA-###### (RN-001); el mismo que valida el CHECK de la tabla incidencias en PostgreSQL.
+     */
+    public const PATRON = '/^TKT-[0-9]{4}-[0-9]{6}$/';
+
     public function siguiente(?int $anio = null): string
     {
         $anio ??= (int) now()->setTimezone(config('praxis.zona_horaria'))->format('Y');
@@ -30,6 +35,19 @@ class GeneradorCodigoTicket
             'updated_at' => now(),
         ]);
 
-        return sprintf('TKT-%d-%06d', $anio, $siguiente);
+        return self::formatear($anio, $siguiente);
+    }
+
+    /**
+     * Código legible de un ticket a partir del año y del consecutivo anual.
+     */
+    public static function formatear(int $anio, int $consecutivo): string
+    {
+        return sprintf('TKT-%d-%06d', $anio, $consecutivo);
+    }
+
+    public static function esValido(string $codigo): bool
+    {
+        return preg_match(self::PATRON, $codigo) === 1;
     }
 }
