@@ -135,6 +135,7 @@ class EjecucionService
     public function iniciarAtencion(Incidencia $incidencia, User $usuario): ActividadMantenimiento
     {
         $this->exigirTecnicoAsignado($incidencia, $usuario);
+        $this->maquina->validarAutorizacionPrevia($incidencia, E::EnAtencion);
 
         return DB::transaction(function () use ($incidencia, $usuario): ActividadMantenimiento {
             $this->maquina->transicionar($incidencia, E::EnAtencion, $usuario, 'Inicio de la intervención física.', 'INICIO_ATENCION');

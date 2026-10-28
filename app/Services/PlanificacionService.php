@@ -186,6 +186,8 @@ class PlanificacionService
      */
     public function programar(Incidencia $incidencia, User $usuario, array $datos): PlanIntervencion
     {
+        $this->maquina->validarAutorizacionPrevia($incidencia, E::Programada);
+
         if (! $incidencia->estaEn(E::EnDiagnostico, E::Programada)) {
             throw ReglaNegocioException::conflicto('Solo se pueden programar incidencias con diagnóstico registrado (E07).', 'D07');
         }
@@ -198,7 +200,7 @@ class PlanificacionService
             $diagnostico = null;
 
             if ($incidencia->estaEn(E::EnDiagnostico)) {
-                $diagnostico = $this->diagnosticoRegistrado($incidencia, confirmado: true);
+                $diagnostico = $this->diagnosticoRegistrado($incidencia, confirmado: true, admiteAprobado: true);
                 $diagnostico->forceFill(['estado' => Diagnostico::APROBADO, 'revisado_por_id' => $usuario->id, 'fecha_revision' => now()])->save();
             }
 
@@ -531,11 +533,12 @@ class PlanificacionService
         }
     }
 
-    private function diagnosticoRegistrado(Incidencia $incidencia, ?bool $confirmado = null): Diagnostico
+    private function diagnosticoRegistrado(Incidencia $incidencia, ?bool $confirmado = null, bool $admiteAprobado = false): Diagnostico
     {
         $diagnostico = $incidencia->diagnosticos()->latest('id')->first();
+        $estadosValidos = $admiteAprobado ? [Diagnostico::REGISTRADO, Diagnostico::APROBADO] : [Diagnostico::REGISTRADO];
 
-        if ($diagnostico === null || $diagnostico->estado !== Diagnostico::REGISTRADO) {
+        if ($diagnostico === null || ! in_array($diagnostico->estado, $estadosValidos, true)) {
             throw ReglaNegocioException::conflicto('El técnico aún no ha registrado el diagnóstico de la inspección.', 'RN-023');
         }
 

@@ -175,6 +175,8 @@ class MaquinaEstados
         $origen = $incidencia->estado_codigo;
         $rol = $usuario === null ? self::SISTEMA : ($actuarComo ?? $this->contextoRol->codigo());
 
+        $this->validarAutorizacionPrevia($incidencia, $destino);
+
         if (! isset(self::matriz()[$origen->value][$destino->value])) {
             if ($destino === E::Cerrada && in_array($origen, [E::EnAtencion, E::PendienteVerificacion, E::EnCorreccion], true)) {
                 throw ReglaNegocioException::conflicto(
@@ -239,6 +241,13 @@ class MaquinaEstados
             );
         }
 
+    }
+
+    /**
+     * Candado operativo RN-029: ninguna transición hacia E10/E11 mientras exista una autorización obligatoria pendiente.
+     */
+    public function validarAutorizacionPrevia(Incidencia $incidencia, E $destino): void
+    {
         if (in_array($destino, [E::Programada, E::EnAtencion], true) && $this->tieneAutorizacionPendiente($incidencia)) {
             throw ReglaNegocioException::conflicto(
                 'La intervención requiere autorización previa aprobada antes de comenzar trabajos (RN-029).',
