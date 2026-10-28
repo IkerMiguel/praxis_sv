@@ -25,6 +25,8 @@ services:
       FRONTEND_URL: http://localhost:3000
       PRAXIS_REFRESH_COOKIE_SECURE: "false"
       PRAXIS_REFRESH_COOKIE_SAMESITE: lax
+      # Nginx solo en IPv4: evita fallos en hosts sin IPv6 habilitado.
+      NGINX_LISTEN_IP_PROTOCOL: ipv4
     volumes:
       - praxis_sv_storage:/var/www/html/storage/app
     depends_on:
