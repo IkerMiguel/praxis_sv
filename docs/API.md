@@ -222,7 +222,7 @@ Todos los errores llegan con `Content-Type: application/problem+json` y esta for
 }
 ```
 
-- `detail` es un mensaje en español apto para mostrarse al usuario.
+- `detail` es un mensaje en español apto para mostrarse al usuario. Toda la API responde en español (validaciones, 401, 403, 404, 405, 429). En un `422` de validación, `detail` repite el primer error y cuántos hay además: `"El campo categoría es obligatorio. (y 4 errores más)"`.
 - `errors` (solo en `422` de validación) trae los mensajes por campo, como en Laravel: `{"descripcion": ["La descripción debe tener al menos 20 caracteres."]}`.
 - `regla` indica la regla de negocio que se incumplió (`RN-0xx`, `D07`, `HU-x.y`). Algunos errores añaden campos propios (`bloqueado_hasta`, `vence`, `alternativa`...).
 
@@ -666,7 +666,7 @@ Lista paginada de usuarios con roles y especialidades.
           "nombre": "Cerrajero"
         }
       ],
-      "fecha_creacion": "2026-10-28T23:32:08+00:00"
+      "fecha_creacion": "2026-10-28T23:55:29+00:00"
     },
     {
       "id": 5,
@@ -688,7 +688,7 @@ Lista paginada de usuarios con roles y especialidades.
           "nombre": "Plomero / Hidrosanitario"
         }
       ],
-      "fecha_creacion": "2026-10-28T23:32:08+00:00"
+      "fecha_creacion": "2026-10-28T23:55:29+00:00"
     }
   ],
   "meta": {
@@ -766,7 +766,7 @@ Crea un usuario con sus roles y especialidades.
         "nombre": "Electricista"
       }
     ],
-    "fecha_creacion": "2026-10-28T23:32:42+00:00"
+    "fecha_creacion": "2026-10-28T23:55:53+00:00"
   }
 }
 ```
@@ -810,7 +810,7 @@ Detalle de un usuario.
         "nombre": "Electricista"
       }
     ],
-    "fecha_creacion": "2026-10-28T23:32:42+00:00"
+    "fecha_creacion": "2026-10-28T23:55:53+00:00"
   }
 }
 ```
@@ -878,7 +878,7 @@ Actualiza datos básicos y especialidades (los roles se cambian en `/roles`).
         "nombre": "Electricista"
       }
     ],
-    "fecha_creacion": "2026-10-28T23:32:42+00:00"
+    "fecha_creacion": "2026-10-28T23:55:53+00:00"
   }
 }
 ```
@@ -942,7 +942,7 @@ Reemplaza los roles del usuario.
         "nombre": "Electricista"
       }
     ],
-    "fecha_creacion": "2026-10-28T23:32:42+00:00"
+    "fecha_creacion": "2026-10-28T23:55:53+00:00"
   }
 }
 ```
@@ -1004,7 +1004,7 @@ Activa o inactiva (borrado lógico) un usuario. Inactivar revoca sus sesiones.
         "nombre": "Electricista"
       }
     ],
-    "fecha_creacion": "2026-10-28T23:32:42+00:00"
+    "fecha_creacion": "2026-10-28T23:55:53+00:00"
   }
 }
 ```
@@ -1262,10 +1262,10 @@ Notificaciones del usuario, más recientes primero, con el contador `no_leidas` 
       "mensaje": "El laboratorio será remodelado y el punto se elimina.",
       "leida": false,
       "incidencia": {
-        "id": "01a184db-ca9c-7195-9dd8-b50e19ac17fb",
+        "id": "01a184f1-057c-7148-87ac-a869b5e6310f",
         "codigo_ticket": "TKT-2026-000007"
       },
-      "fecha_envio": "2026-10-28T23:32:40+00:00",
+      "fecha_envio": "2026-10-28T23:55:51+00:00",
       "fecha_lectura": null
     },
     {
@@ -1275,10 +1275,10 @@ Notificaciones del usuario, más recientes primero, con el contador `no_leidas` 
       "mensaje": "La inspección técnica no confirmó el daño reportado: Las chispas provenían de una extensión personal ya retirada.",
       "leida": false,
       "incidencia": {
-        "id": "01a184db-c116-7064-93ba-664e4dde34d0",
+        "id": "01a184f0-fa65-737d-98bb-78a86c49a53a",
         "codigo_ticket": "TKT-2026-000005"
       },
-      "fecha_envio": "2026-10-28T23:32:37+00:00",
+      "fecha_envio": "2026-10-28T23:55:48+00:00",
       "fecha_lectura": null
     }
   ],
@@ -1295,7 +1295,7 @@ Notificaciones del usuario, más recientes primero, con el contador `no_leidas` 
     "links": [
       {
         "url": null,
-        "label": "&laquo; Previous",
+        "label": "&laquo; Anterior",
         "page": null,
         "active": false
       }
@@ -1335,11 +1335,11 @@ Marca una notificación como leída.
     "mensaje": "El laboratorio será remodelado y el punto se elimina.",
     "leida": true,
     "incidencia": {
-      "id": "01a184db-ca9c-7195-9dd8-b50e19ac17fb",
+      "id": "01a184f1-057c-7148-87ac-a869b5e6310f",
       "codigo_ticket": "TKT-2026-000007"
     },
-    "fecha_envio": "2026-10-28T23:32:40+00:00",
-    "fecha_lectura": "2026-10-28T23:32:41+00:00"
+    "fecha_envio": "2026-10-28T23:55:51+00:00",
+    "fecha_lectura": "2026-10-28T23:55:53+00:00"
   },
   "meta": {
     "no_leidas": 9
@@ -1598,8 +1598,8 @@ Sube uno o varios archivos de evidencia. Devuelve sus `id` para referenciarlos d
       "mime_type": "image/png",
       "tamano_bytes": 73,
       "hash_sha256": "21391377d875154ec5cc383409732159c8c82a47b00eeb6d2970a474846dd138",
-      "fecha_carga": "2026-10-28T23:32:27+00:00",
-      "url": "http://localhost:8000/api/v1/evidencias/1/descargar?expires=1793232147&signature=…"
+      "fecha_carga": "2026-10-28T23:55:38+00:00",
+      "url": "http://localhost:8000/api/v1/evidencias/1/descargar?expires=1793233538&signature=…"
     }
   ]
 }
@@ -1634,7 +1634,7 @@ Incidencias abiertas (E01-E11, últimos 15 días) en el mismo espacio y categor�
   "hay_coincidencias": true,
   "data": [
     {
-      "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+      "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
       "codigo_ticket": "TKT-2026-000001",
       "resumen": "Luminaria apagada en Aula 101",
       "categoria": {
@@ -1645,7 +1645,7 @@ Incidencias abiertas (E01-E11, últimos 15 días) en el mismo espacio y categor�
         "codigo": "E01",
         "nombre": "Registrada"
       },
-      "fecha_registro": "2026-10-28T23:32:27+00:00",
+      "fecha_registro": "2026-10-28T23:55:38+00:00",
       "es_mia": false,
       "ya_suscrito": false
     }
@@ -1713,7 +1713,7 @@ Radica una incidencia nueva y genera su código `TKT-AAAA-######`.
 ```json
 {
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E01",
@@ -1721,7 +1721,7 @@ Radica una incidencia nueva y genera su código `TKT-AAAA-######`.
     },
     "posible_duplicado": false,
     "es_riesgo_inmediato": false,
-    "fecha_registro": "2026-10-28T23:32:27+00:00"
+    "fecha_registro": "2026-10-28T23:55:38+00:00"
   }
 }
 ```
@@ -1781,9 +1781,9 @@ Ejemplo de error `403`:
 ```json
 {
   "type": "https://praxis.ecci.edu.co/problemas/acceso-denegado",
-  "title": "Error en la solicitud.",
+  "title": "Acceso denegado.",
   "status": 403,
-  "detail": "Invalid signature.",
+  "detail": "El enlace no es válido o ya venció. Solicite uno nuevo.",
   "instance": "/api/v1/evidencias/1/descargar"
 }
 ```
@@ -1818,7 +1818,7 @@ Solicitudes del usuario autenticado, más recientes primero.
 {
   "data": [
     {
-      "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+      "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
       "codigo_ticket": "TKT-2026-000001",
       "resumen": "Luminaria apagada en Aula 101",
       "estado": {
@@ -1835,8 +1835,8 @@ Solicitudes del usuario autenticado, más recientes primero.
       },
       "es_riesgo_inmediato": false,
       "posible_duplicado": false,
-      "fecha_registro": "2026-10-28T23:32:27+00:00",
-      "fecha_actualizacion": "2026-10-28T23:32:28+00:00",
+      "fecha_registro": "2026-10-28T23:55:38+00:00",
+      "fecha_actualizacion": "2026-10-28T23:55:39+00:00",
       "fecha_cierre": null
     }
   ],
@@ -1853,7 +1853,7 @@ Solicitudes del usuario autenticado, más recientes primero.
     "links": [
       {
         "url": null,
-        "label": "&laquo; Previous",
+        "label": "&laquo; Anterior",
         "page": null,
         "active": false
       }
@@ -1890,7 +1890,7 @@ Ficha de seguimiento: datos, evidencias, historial público, aclaración pendien
 ```json
 {
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "resumen": "Luminaria apagada en Aula 101",
     "descripcion": "La luminaria del fondo del aula no enciende desde ayer en la tarde.",
@@ -1938,8 +1938,8 @@ Ficha de seguimiento: datos, evidencias, historial público, aclaración pendien
     },
     "es_riesgo_inmediato": false,
     "posible_duplicado": false,
-    "fecha_registro": "2026-10-28T23:32:27+00:00",
-    "fecha_actualizacion": "2026-10-28T23:32:28+00:00",
+    "fecha_registro": "2026-10-28T23:55:38+00:00",
+    "fecha_actualizacion": "2026-10-28T23:55:39+00:00",
     "fecha_cierre": null,
     "es_creador": true,
     "es_seguimiento": false,
@@ -1955,25 +1955,25 @@ Ficha de seguimiento: datos, evidencias, historial público, aclaración pendien
           "id": 1,
           "name": "Laura Reportante"
         },
-        "fecha_carga": "2026-10-28T23:32:27+00:00",
-        "url": "http://localhost:8000/api/v1/evidencias/1/descargar?expires=1793232149&signature=…"
+        "fecha_carga": "2026-10-28T23:55:38+00:00",
+        "url": "http://localhost:8000/api/v1/evidencias/1/descargar?expires=1793233540&signature=…"
       }
     ],
     "aclaracion_pendiente": {
       "id": 1,
       "pregunta": "¿La luminaria parpadea o está totalmente apagada?",
-      "fecha_solicitud": "2026-10-28T23:32:28+00:00",
+      "fecha_solicitud": "2026-10-28T23:55:39+00:00",
       "fecha_limite_respuesta": "2026-11-05T23:00:00+00:00"
     },
     "incidencia_principal": null,
     "resultado_cierre": null,
     "historial": [
       {
-        "id": "01a184db-9e3f-7347-8657-b3398cfa7ce1",
-        "incidencia_id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+        "id": "01a184f0-d6d6-7365-a477-f747dbcf94cc",
+        "incidencia_id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
         "tipo_evento": "CREACION",
         "categoria": "ESTADO",
-        "fecha_hora": "2026-10-28T23:32:27+00:00",
+        "fecha_hora": "2026-10-28T23:55:38+00:00",
         "usuario": null,
         "rol": "R01",
         "estado_anterior": null,
@@ -1987,7 +1987,7 @@ Ficha de seguimiento: datos, evidencias, historial público, aclaración pendien
           {
             "evidencia_id": 1,
             "sha256": "21391377d875154ec5cc383409732159c8c82a47b00eeb6d2970a474846dd138",
-            "uri": "evidencias://temporales/1/1bb1b658-cc66-4a21-9572-ff94379198f8.png",
+            "uri": "evidencias://temporales/1/bb4fca77-c07f-47a8-bce6-a43f84f4b8fb.png",
             "mime_type": "image/png",
             "nombre_original": "tablero.png"
           }
@@ -2111,7 +2111,7 @@ Ejemplo de error `409`:
   "title": "Conflicto con el estado actual.",
   "status": 409,
   "detail": "La solicitud ya se encuentra finalizada.",
-  "instance": "/api/v1/incidencias/01a184db-bf6b-71dc-a30c-436d71eac1a9/cancelar-solicitante",
+  "instance": "/api/v1/incidencias/01a184f0-f8d2-7348-9935-fd976d364518/cancelar-solicitante",
   "regla": "HU-4.4"
 }
 ```
@@ -2263,7 +2263,7 @@ Ficha operativa completa de una incidencia (para la mesa de ayuda, coordinación
 ```json
 {
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "resumen": "Luminaria apagada en Aula 101",
     "descripcion": "La luminaria del fondo del aula no enciende desde ayer en la tarde.",
@@ -2316,8 +2316,8 @@ Ficha operativa completa de una incidencia (para la mesa de ayuda, coordinación
     },
     "es_riesgo_inmediato": false,
     "posible_duplicado": false,
-    "fecha_registro": "2026-10-28T23:32:27+00:00",
-    "fecha_actualizacion": "2026-10-28T23:32:30+00:00",
+    "fecha_registro": "2026-10-28T23:55:38+00:00",
+    "fecha_actualizacion": "2026-10-28T23:55:41+00:00",
     "fecha_cierre": null,
     "reportante": {
       "id": 1,
@@ -2339,14 +2339,14 @@ Ficha operativa completa de una incidencia (para la mesa de ayuda, coordinación
     "incidencia_principal": null,
     "duplicados_vinculados": [
       {
-        "id": "01a184db-a11e-737a-aa70-2ca10d2ca1f8",
+        "id": "01a184f0-d9cd-70df-980d-9cc5c69bfb0e",
         "codigo_ticket": "TKT-2026-000002",
         "resumen": "Lámpara dañada Aula 101"
       }
     ],
     "sla": {
       "fecha_limite_respuesta": "2026-10-29T21:00:00+00:00",
-      "fecha_primera_respuesta": "2026-10-28T23:32:28+00:00",
+      "fecha_primera_respuesta": "2026-10-28T23:55:39+00:00",
       "sla_respuesta_cumplido": true,
       "resolucion": {
         "estado": "EN_PLAZO",
@@ -2360,64 +2360,64 @@ Ficha operativa completa de una incidencia (para la mesa de ayuda, coordinación
     "aclaraciones": [
       {
         "id": 1,
-        "incidencia_id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+        "incidencia_id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
         "gestor_solicitante_id": 2,
         "pregunta_gestor": "¿La luminaria parpadea o está totalmente apagada?",
-        "fecha_solicitud": "2026-10-28T23:32:28.000000Z",
+        "fecha_solicitud": "2026-10-28T23:55:39.000000Z",
         "fecha_limite_respuesta": "2026-11-05T23:00:00.000000Z",
         "respuesta_reportante": "Está totalmente apagada, no parpadea.",
-        "fecha_respuesta": "2026-10-28T23:32:29.000000Z",
+        "fecha_respuesta": "2026-10-28T23:55:40.000000Z",
         "respondida_por_id": 1,
         "estado": "RESPONDIDA",
-        "created_at": "2026-10-28T23:32:28.000000Z",
-        "updated_at": "2026-10-28T23:32:29.000000Z",
+        "created_at": "2026-10-28T23:55:39.000000Z",
+        "updated_at": "2026-10-28T23:55:40.000000Z",
         "gestor": {
           "id": 2,
           "name": "Gabriel Gestor",
           "email": "gestor@praxis.test",
           "email_verified_at": null,
-          "created_at": "2026-10-28T23:32:07.000000Z",
-          "updated_at": "2026-10-28T23:32:23.000000Z",
+          "created_at": "2026-10-28T23:55:28.000000Z",
+          "updated_at": "2026-10-28T23:55:33.000000Z",
           "telefono": null,
           "activo": true,
           "intentos_fallidos": 0,
           "ultimo_intento_fallido_en": null,
           "bloqueado_hasta": null,
-          "ultimo_acceso_en": "2026-10-28T23:32:23.000000Z"
+          "ultimo_acceso_en": "2026-10-28T23:55:33.000000Z"
         }
       }
     ],
     "evaluaciones_riesgo": [
       {
         "id": 1,
-        "incidencia_id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+        "incidencia_id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
         "evaluador_id": 2,
         "tiene_riesgo_inmediato": false,
         "nivel_riesgo": "BAJO",
         "protocolo_activado": false,
         "acciones_adoptadas": null,
         "observaciones": "Sin riesgo para los ocupantes.",
-        "created_at": "2026-10-28T23:32:29.000000Z",
+        "created_at": "2026-10-28T23:55:40.000000Z",
         "evaluador": {
           "id": 2,
           "name": "Gabriel Gestor",
           "email": "gestor@praxis.test",
           "email_verified_at": null,
-          "created_at": "2026-10-28T23:32:07.000000Z",
-          "updated_at": "2026-10-28T23:32:23.000000Z",
+          "created_at": "2026-10-28T23:55:28.000000Z",
+          "updated_at": "2026-10-28T23:55:33.000000Z",
           "telefono": null,
           "activo": true,
           "intentos_fallidos": 0,
           "ultimo_intento_fallido_en": null,
           "bloqueado_hasta": null,
-          "ultimo_acceso_en": "2026-10-28T23:32:23.000000Z"
+          "ultimo_acceso_en": "2026-10-28T23:55:33.000000Z"
         }
       }
     ],
     "asignaciones": [
       {
         "id": 1,
-        "incidencia_id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+        "incidencia_id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
         "tecnico_asignado_id": 4,
         "asignado_por_id": 3,
         "tecnico_anterior_id": null,
@@ -2427,34 +2427,34 @@ Ficha operativa completa de una incidencia (para la mesa de ayuda, coordinación
         "instrucciones": "Revisar balasto y tubo.",
         "fecha_visita_tentativa": "2026-10-29T00:00:00.000000Z",
         "fecha_fin_vigencia": null,
-        "created_at": "2026-10-28T23:32:30.000000Z",
+        "created_at": "2026-10-28T23:55:41.000000Z",
         "tecnico": {
           "id": 4,
           "name": "Tomás Técnico Electricista",
           "email": "tecnico@praxis.test",
           "email_verified_at": null,
-          "created_at": "2026-10-28T23:32:08.000000Z",
-          "updated_at": "2026-10-28T23:32:23.000000Z",
+          "created_at": "2026-10-28T23:55:28.000000Z",
+          "updated_at": "2026-10-28T23:55:34.000000Z",
           "telefono": null,
           "activo": true,
           "intentos_fallidos": 0,
           "ultimo_intento_fallido_en": null,
           "bloqueado_hasta": null,
-          "ultimo_acceso_en": "2026-10-28T23:32:23.000000Z"
+          "ultimo_acceso_en": "2026-10-28T23:55:34.000000Z"
         },
         "asignado_por": {
           "id": 3,
           "name": "Camila Coordinadora",
           "email": "coordinador@praxis.test",
           "email_verified_at": null,
-          "created_at": "2026-10-28T23:32:07.000000Z",
-          "updated_at": "2026-10-28T23:32:23.000000Z",
+          "created_at": "2026-10-28T23:55:28.000000Z",
+          "updated_at": "2026-10-28T23:55:34.000000Z",
           "telefono": null,
           "activo": true,
           "intentos_fallidos": 0,
           "ultimo_intento_fallido_en": null,
           "bloqueado_hasta": null,
-          "ultimo_acceso_en": "2026-10-28T23:32:23.000000Z"
+          "ultimo_acceso_en": "2026-10-28T23:55:34.000000Z"
         }
       }
     ],
@@ -2476,8 +2476,8 @@ Ficha operativa completa de una incidencia (para la mesa de ayuda, coordinación
           "id": 1,
           "name": "Laura Reportante"
         },
-        "fecha_carga": "2026-10-28T23:32:27+00:00",
-        "url": "http://localhost:8000/api/v1/evidencias/1/descargar?expires=1793232151&signature=…"
+        "fecha_carga": "2026-10-28T23:55:38+00:00",
+        "url": "http://localhost:8000/api/v1/evidencias/1/descargar?expires=1793233541&signature=…"
       }
     ],
     "transiciones_disponibles": [
@@ -2510,7 +2510,7 @@ El gestor toma la incidencia para revisarla.
 {
   "mensaje": "Revisión iniciada.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E03",
@@ -2535,7 +2535,7 @@ Ejemplo de error `409`:
   "title": "Conflicto con el estado actual.",
   "status": 409,
   "detail": "La incidencia está en E03 (En revisión) y no puede pasar a E03 (En revisión).",
-  "instance": "/api/v1/incidencias/01a184db-9e3a-7084-8e55-7c7c9ecc9d38/iniciar-revision",
+  "instance": "/api/v1/incidencias/01a184f0-d6d2-73b0-8089-25fd7ba5a503/iniciar-revision",
   "regla": "D07",
   "estado_actual": "E03",
   "estado_destino": "E03"
@@ -2572,7 +2572,7 @@ Pide información adicional al reportante; fija un plazo de respuesta en días h
 {
   "mensaje": "Aclaración solicitada al reportante.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E02",
@@ -2607,7 +2607,7 @@ Candidatos a duplicado ponderados por ubicación, categoría, similitud de descr
 {
   "data": [
     {
-      "id": "01a184db-a11e-737a-aa70-2ca10d2ca1f8",
+      "id": "01a184f0-d9cd-70df-980d-9cc5c69bfb0e",
       "codigo_ticket": "TKT-2026-000002",
       "resumen": "Lámpara dañada Aula 101",
       "descripcion": "La luminaria del fondo del aula no enciende desde ayer en la tarde.",
@@ -2623,7 +2623,7 @@ Candidatos a duplicado ponderados por ubicación, categoría, similitud de descr
         "id": 1,
         "nombre": "Aula 101"
       },
-      "fecha_registro": "2026-10-28T23:32:28+00:00",
+      "fecha_registro": "2026-10-28T23:55:39+00:00",
       "evidencias": 0,
       "criterios": {
         "misma_ubicacion": true,
@@ -2662,7 +2662,7 @@ Unifica la incidencia como duplicada de otra principal; su reportante pasa a seg
 
 ```json
 {
-  "incidencia_principal_id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+  "incidencia_principal_id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
   "observaciones": "Mismo daño reportado en A-101."
 }
 ```
@@ -2673,13 +2673,13 @@ Unifica la incidencia como duplicada de otra principal; su reportante pasa a seg
 {
   "mensaje": "Incidencia vinculada como duplicada.",
   "data": {
-    "id": "01a184db-a11e-737a-aa70-2ca10d2ca1f8",
+    "id": "01a184f0-d9cd-70df-980d-9cc5c69bfb0e",
     "codigo_ticket": "TKT-2026-000002",
     "estado": {
       "codigo": "E15",
       "nombre": "Cerrada"
     },
-    "incidencia_principal_id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38"
+    "incidencia_principal_id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503"
   }
 }
 ```
@@ -2721,7 +2721,7 @@ Descarta la sugerencia de duplicado y quita la marca `posible_duplicado`.
 {
   "mensaje": "Se descartó la sugerencia de duplicado.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E03",
@@ -2774,7 +2774,7 @@ Decide la procedencia. Si procede, calcula la prioridad con la matriz Impacto ×
 {
   "mensaje": "Incidencia clasificada y remitida a coordinación.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E05",
@@ -2829,7 +2829,7 @@ Recalcula la prioridad de una incidencia ya clasificada y deja el cambio en el h
 {
   "mensaje": "Prioridad actualizada.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E05",
@@ -2885,7 +2885,7 @@ Registra la evaluación de riesgo. Con riesgo inmediato activa el protocolo de e
 {
   "mensaje": "Protocolo de emergencia activado.",
   "data": {
-    "id": "01a184db-c116-7064-93ba-664e4dde34d0",
+    "id": "01a184f0-fa65-737d-98bb-78a86c49a53a",
     "codigo_ticket": "TKT-2026-000005",
     "estado": {
       "codigo": "E05",
@@ -2993,7 +2993,7 @@ Asigna (o reasigna) el técnico responsable y lo notifica.
 {
   "mensaje": "Técnico asignado.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E06",
@@ -3050,7 +3050,7 @@ Aprueba el diagnóstico y programa la intervención (cuando no hacen falta recur
 {
   "mensaje": "Intervención programada.",
   "data": {
-    "id": "01a184db-c4cb-72bb-bba3-cb07fbcc1578",
+    "id": "01a184f0-fe79-7351-aafe-077cc2cd59bd",
     "codigo_ticket": "TKT-2026-000006",
     "estado": {
       "codigo": "E10",
@@ -3112,7 +3112,7 @@ Cambia la fecha u hora del plan vigente y guarda la fecha anterior con el motivo
 {
   "mensaje": "Intervención reprogramada.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E10",
@@ -3166,7 +3166,7 @@ Devuelve el diagnóstico al técnico por insuficiente; debe volver a inspecciona
 {
   "mensaje": "Diagnóstico devuelto al técnico.",
   "data": {
-    "id": "01a184db-c4cb-72bb-bba3-cb07fbcc1578",
+    "id": "01a184f0-fe79-7351-aafe-077cc2cd59bd",
     "codigo_ticket": "TKT-2026-000006",
     "estado": {
       "codigo": "E06",
@@ -3213,7 +3213,7 @@ Visto bueno del coordinador al descarte del técnico: cierra con resultado `NO_C
 {
   "mensaje": "Cierre justificado por incidencia no confirmada.",
   "data": {
-    "id": "01a184db-c116-7064-93ba-664e4dde34d0",
+    "id": "01a184f0-fa65-737d-98bb-78a86c49a53a",
     "codigo_ticket": "TKT-2026-000005",
     "estado": {
       "codigo": "E15",
@@ -3256,7 +3256,7 @@ Bandeja del técnico: sus incidencias activas (E06 a E11, E13 y E18), primero la
 {
   "data": [
     {
-      "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+      "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
       "codigo_ticket": "TKT-2026-000001",
       "resumen": "Luminaria apagada en Aula 101",
       "estado": {
@@ -3301,8 +3301,8 @@ Bandeja del técnico: sus incidencias activas (E06 a E11, E13 y E18), primero la
       },
       "es_riesgo_inmediato": false,
       "posible_duplicado": false,
-      "fecha_registro": "2026-10-28T23:32:27+00:00",
-      "fecha_actualizacion": "2026-10-28T23:32:30+00:00",
+      "fecha_registro": "2026-10-28T23:55:38+00:00",
+      "fecha_actualizacion": "2026-10-28T23:55:41+00:00",
       "fecha_cierre": null
     }
   ],
@@ -3319,7 +3319,7 @@ Bandeja del técnico: sus incidencias activas (E06 a E11, E13 y E18), primero la
     "links": [
       {
         "url": null,
-        "label": "&laquo; Previous",
+        "label": "&laquo; Anterior",
         "page": null,
         "active": false
       }
@@ -3354,7 +3354,7 @@ El técnico asignado inicia la inspección en sitio.
 {
   "mensaje": "Inspección iniciada.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E07",
@@ -3414,7 +3414,7 @@ Registra el diagnóstico de un daño confirmado con la intervención propuesta; 
 {
   "mensaje": "Diagnóstico registrado.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E07",
@@ -3465,7 +3465,7 @@ El técnico documenta que el daño no existe; exige evidencia del estado funcion
 {
   "mensaje": "Descarte registrado. Pendiente del visto bueno del coordinador.",
   "data": {
-    "id": "01a184db-c116-7064-93ba-664e4dde34d0",
+    "id": "01a184f0-fa65-737d-98bb-78a86c49a53a",
     "codigo_ticket": "TKT-2026-000005",
     "estado": {
       "codigo": "E07",
@@ -3501,14 +3501,14 @@ El técnico inicia la intervención física.
 {
   "mensaje": "Intervención iniciada.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E11",
       "nombre": "En atención"
     },
     "actividad_id": 1,
-    "fecha_inicio": "2026-10-28T23:32:32+00:00"
+    "fecha_inicio": "2026-10-28T23:55:44+00:00"
   }
 }
 ```
@@ -3564,7 +3564,7 @@ Registra lo realizado, el tiempo y los materiales, con evidencia obligatoria, y 
 {
   "mensaje": "Intervención registrada. Pendiente de verificación.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E12",
@@ -3617,7 +3617,7 @@ Suspende temporalmente la atención con causa, motivo y condiciones para reanuda
 {
   "mensaje": "Atención suspendida.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E18",
@@ -3673,7 +3673,7 @@ Reanuda una incidencia suspendida y registra cuánto duró la pausa.
 {
   "mensaje": "Atención reanudada.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E10",
@@ -3760,14 +3760,14 @@ Registra los recursos que faltan para la intervención.
         "unidad": "UND",
         "costo_estimado": 85000,
         "disponible": false,
-        "created_at": "2026-10-28T23:32:31.000000Z",
-        "updated_at": "2026-10-28T23:32:31.000000Z"
+        "created_at": "2026-10-28T23:55:42.000000Z",
+        "updated_at": "2026-10-28T23:55:42.000000Z"
       }
     ],
     "solicitante": null,
-    "fecha_solicitud": "2026-10-28T23:32:31+00:00",
+    "fecha_solicitud": "2026-10-28T23:55:42+00:00",
     "incidencia": {
-      "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+      "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
       "codigo_ticket": "TKT-2026-000001",
       "resumen": "Luminaria apagada en Aula 101",
       "estado": {
@@ -3819,17 +3819,17 @@ Bandeja de solicitudes de recursos pendientes de dictamen.
           "unidad": "UND",
           "costo_estimado": 85000,
           "disponible": false,
-          "created_at": "2026-10-28T23:32:31.000000Z",
-          "updated_at": "2026-10-28T23:32:31.000000Z"
+          "created_at": "2026-10-28T23:55:42.000000Z",
+          "updated_at": "2026-10-28T23:55:42.000000Z"
         }
       ],
       "solicitante": {
         "id": 3,
         "name": "Camila Coordinadora"
       },
-      "fecha_solicitud": "2026-10-28T23:32:31+00:00",
+      "fecha_solicitud": "2026-10-28T23:55:42+00:00",
       "incidencia": {
-        "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+        "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
         "codigo_ticket": "TKT-2026-000001",
         "resumen": "Luminaria apagada en Aula 101",
         "estado": {
@@ -3903,14 +3903,14 @@ Emite el dictamen sobre una solicitud que requiere autorización.
         "unidad": "UND",
         "costo_estimado": 85000,
         "disponible": false,
-        "created_at": "2026-10-28T23:32:31.000000Z",
-        "updated_at": "2026-10-28T23:32:31.000000Z"
+        "created_at": "2026-10-28T23:55:42.000000Z",
+        "updated_at": "2026-10-28T23:55:42.000000Z"
       }
     ],
     "solicitante": null,
-    "fecha_solicitud": "2026-10-28T23:32:31+00:00",
+    "fecha_solicitud": "2026-10-28T23:55:42+00:00",
     "incidencia": {
-      "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+      "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
       "codigo_ticket": "TKT-2026-000001",
       "resumen": "Luminaria apagada en Aula 101",
       "estado": {
@@ -3969,7 +3969,7 @@ Confirma que todos los recursos llegaron y programa la intervención.
 {
   "mensaje": "Recursos disponibles. Intervención programada.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "estado": {
       "codigo": "E10",
       "nombre": "Programada"
@@ -4018,7 +4018,7 @@ Agrega una nota de seguimiento a una solicitud pendiente (no cambia el estado, R
     "solicitud_recurso_id": 1,
     "usuario_id": 3,
     "comentario_seguimiento": "Proveedor confirma entrega mañana.",
-    "created_at": "2026-10-28T23:32:32.000000Z",
+    "created_at": "2026-10-28T23:55:43.000000Z",
     "id": 1
   }
 }
@@ -4061,7 +4061,7 @@ Cancelación administrativa por imposibilidad (p. ej. recursos que no llegarán)
 {
   "mensaje": "Incidencia cancelada.",
   "data": {
-    "id": "01a184db-ca9c-7195-9dd8-b50e19ac17fb",
+    "id": "01a184f1-057c-7148-87ac-a869b5e6310f",
     "codigo_ticket": "TKT-2026-000007",
     "estado": {
       "codigo": "E17",
@@ -4105,7 +4105,7 @@ Bandeja de verificación: incidencias en E12, las más antiguas primero.
 {
   "data": [
     {
-      "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+      "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
       "codigo_ticket": "TKT-2026-000001",
       "resumen": "Luminaria apagada en Aula 101",
       "estado": {
@@ -4154,8 +4154,8 @@ Bandeja de verificación: incidencias en E12, las más antiguas primero.
       },
       "es_riesgo_inmediato": false,
       "posible_duplicado": false,
-      "fecha_registro": "2026-10-28T23:32:27+00:00",
-      "fecha_actualizacion": "2026-10-28T23:32:33+00:00",
+      "fecha_registro": "2026-10-28T23:55:38+00:00",
+      "fecha_actualizacion": "2026-10-28T23:55:44+00:00",
       "fecha_cierre": null
     }
   ],
@@ -4172,7 +4172,7 @@ Bandeja de verificación: incidencias en E12, las más antiguas primero.
     "links": [
       {
         "url": null,
-        "label": "&laquo; Previous",
+        "label": "&laquo; Anterior",
         "page": null,
         "active": false
       }
@@ -4230,7 +4230,7 @@ Dictamen de calidad conforme.
 {
   "mensaje": "Verificación conforme registrada.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "verificacion_id": 2,
     "estado": {
@@ -4292,7 +4292,7 @@ Dictamen no conforme: vuelve a corrección y suma un ciclo de reproceso.
 {
   "mensaje": "Verificación no conforme registrada. La incidencia pasó a corrección.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "verificacion_id": 1,
     "estado": {
@@ -4347,7 +4347,7 @@ Programa la corrección tras un rechazo de verificación o de conformidad.
 {
   "mensaje": "Corrección programada.",
   "data": {
-    "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+    "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
     "codigo_ticket": "TKT-2026-000001",
     "estado": {
       "codigo": "E10",
@@ -4419,7 +4419,7 @@ Ejemplo de error `422`:
   "title": "Regla de negocio incumplida.",
   "status": 422,
   "detail": "El plazo de confirmación del reportante (5 días hábiles) aún no ha vencido.",
-  "instance": "/api/v1/incidencias/01a184db-9e3a-7084-8e55-7c7c9ecc9d38/cierre-administrativo",
+  "instance": "/api/v1/incidencias/01a184f0-d6d2-73b0-8089-25fd7ba5a503/cierre-administrativo",
   "regla": "HU-9.3",
   "vence": "2026-11-05T23:00:00+00:00"
 }
@@ -4462,7 +4462,7 @@ Consola de incidencias con filtros combinables, tiempo de atención y semáforo 
 {
   "data": [
     {
-      "id": "01a184db-ca9c-7195-9dd8-b50e19ac17fb",
+      "id": "01a184f1-057c-7148-87ac-a869b5e6310f",
       "codigo_ticket": "TKT-2026-000007",
       "resumen": "Toma de laboratorio sin energía",
       "estado": {
@@ -4511,9 +4511,9 @@ Consola de incidencias con filtros combinables, tiempo de atención y semáforo 
       },
       "es_riesgo_inmediato": false,
       "posible_duplicado": false,
-      "fecha_registro": "2026-10-28T23:32:39+00:00",
-      "fecha_actualizacion": "2026-10-28T23:32:40+00:00",
-      "fecha_cierre": "2026-10-28T23:32:40+00:00",
+      "fecha_registro": "2026-10-28T23:55:50+00:00",
+      "fecha_actualizacion": "2026-10-28T23:55:51+00:00",
+      "fecha_cierre": "2026-10-28T23:55:51+00:00",
       "tiempo_atencion": {
         "horas": 0,
         "en_curso": false,
@@ -4529,7 +4529,7 @@ Consola de incidencias con filtros combinables, tiempo de atención y semáforo 
       }
     },
     {
-      "id": "01a184db-c4cb-72bb-bba3-cb07fbcc1578",
+      "id": "01a184f0-fe79-7351-aafe-077cc2cd59bd",
       "codigo_ticket": "TKT-2026-000006",
       "resumen": "Tomacorriente suelto",
       "estado": {
@@ -4578,8 +4578,8 @@ Consola de incidencias con filtros combinables, tiempo de atención y semáforo 
       },
       "es_riesgo_inmediato": false,
       "posible_duplicado": false,
-      "fecha_registro": "2026-10-28T23:32:37+00:00",
-      "fecha_actualizacion": "2026-10-28T23:32:38+00:00",
+      "fecha_registro": "2026-10-28T23:55:48+00:00",
+      "fecha_actualizacion": "2026-10-28T23:55:50+00:00",
       "fecha_cierre": null,
       "tiempo_atencion": {
         "horas": 0,
@@ -4635,11 +4635,11 @@ Línea de tiempo de auditoría. R01 recibe solo los eventos públicos (`alcance:
   "alcance": "COMPLETO",
   "data": [
     {
-      "id": "01a184db-9e3f-7347-8657-b3398cfa7ce1",
-      "incidencia_id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+      "id": "01a184f0-d6d6-7365-a477-f747dbcf94cc",
+      "incidencia_id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
       "tipo_evento": "CREACION",
       "categoria": "ESTADO",
-      "fecha_hora": "2026-10-28T23:32:27+00:00",
+      "fecha_hora": "2026-10-28T23:55:38+00:00",
       "usuario": {
         "id": 1,
         "name": "Laura Reportante"
@@ -4661,18 +4661,18 @@ Línea de tiempo de auditoría. R01 recibe solo los eventos públicos (`alcance:
         {
           "evidencia_id": 1,
           "sha256": "21391377d875154ec5cc383409732159c8c82a47b00eeb6d2970a474846dd138",
-          "uri": "evidencias://temporales/1/1bb1b658-cc66-4a21-9572-ff94379198f8.png",
+          "uri": "evidencias://temporales/1/bb4fca77-c07f-47a8-bce6-a43f84f4b8fb.png",
           "mime_type": "image/png",
           "nombre_original": "tablero.png"
         }
       ]
     },
     {
-      "id": "01a184db-a07b-71f9-952d-ffa1a20374e4",
-      "incidencia_id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+      "id": "01a184f0-d91e-7182-aee5-9c89bc1b8869",
+      "incidencia_id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
       "tipo_evento": "SUSCRIPCION_SEGUIMIENTO",
       "categoria": "ACTIVIDAD",
-      "fecha_hora": "2026-10-28T23:32:28+00:00",
+      "fecha_hora": "2026-10-28T23:55:39+00:00",
       "usuario": {
         "id": 10,
         "name": "Diana Docente Verificadora"
@@ -4720,7 +4720,7 @@ Incidencias abiertas con su estado SLA (EN_PLAZO, PROXIMA_A_VENCER, VENCIDA) y u
   },
   "data": [
     {
-      "id": "01a184db-9e3a-7084-8e55-7c7c9ecc9d38",
+      "id": "01a184f0-d6d2-73b0-8089-25fd7ba5a503",
       "codigo_ticket": "TKT-2026-000001",
       "resumen": "Luminaria apagada en Aula 101",
       "estado": {
@@ -4746,8 +4746,8 @@ Incidencias abiertas con su estado SLA (EN_PLAZO, PROXIMA_A_VENCER, VENCIDA) y u
       },
       "es_riesgo_inmediato": false,
       "posible_duplicado": false,
-      "fecha_registro": "2026-10-28T23:32:27+00:00",
-      "fecha_actualizacion": "2026-10-28T23:32:35+00:00",
+      "fecha_registro": "2026-10-28T23:55:38+00:00",
+      "fecha_actualizacion": "2026-10-28T23:55:46+00:00",
       "fecha_cierre": null,
       "sla": {
         "estado": "EN_PLAZO",
@@ -4759,7 +4759,7 @@ Incidencias abiertas con su estado SLA (EN_PLAZO, PROXIMA_A_VENCER, VENCIDA) y u
       }
     },
     {
-      "id": "01a184db-c4cb-72bb-bba3-cb07fbcc1578",
+      "id": "01a184f0-fe79-7351-aafe-077cc2cd59bd",
       "codigo_ticket": "TKT-2026-000006",
       "resumen": "Tomacorriente suelto",
       "estado": {
@@ -4785,8 +4785,8 @@ Incidencias abiertas con su estado SLA (EN_PLAZO, PROXIMA_A_VENCER, VENCIDA) y u
       },
       "es_riesgo_inmediato": false,
       "posible_duplicado": false,
-      "fecha_registro": "2026-10-28T23:32:37+00:00",
-      "fecha_actualizacion": "2026-10-28T23:32:38+00:00",
+      "fecha_registro": "2026-10-28T23:55:48+00:00",
+      "fecha_actualizacion": "2026-10-28T23:55:50+00:00",
       "fecha_cierre": null,
       "sla": {
         "estado": "EN_PLAZO",
@@ -4832,7 +4832,7 @@ Indicadores del periodo: totales por estado y prioridad, MTTR, cumplimiento SLA 
   "data": {
     "periodo": {
       "desde": "2026-10-01T00:00:00+00:00",
-      "hasta": "2026-10-28T23:32:41+00:00"
+      "hasta": "2026-10-28T23:55:52+00:00"
     },
     "sin_datos": false,
     "total_incidencias": 7,
@@ -4899,8 +4899,8 @@ Indicadores del periodo: totales por estado y prioridad, MTTR, cumplimiento SLA 
       "nombre": "Campus Principal",
       "direccion": "Calle 17 # 4-81",
       "activo": true,
-      "created_at": "2026-10-28T23:32:07.000000Z",
-      "updated_at": "2026-10-28T23:32:07.000000Z",
+      "created_at": "2026-10-28T23:55:27.000000Z",
+      "updated_at": "2026-10-28T23:55:27.000000Z",
       "edificios": [
         {
           "id": 1,
@@ -4908,8 +4908,8 @@ Indicadores del periodo: totales por estado y prioridad, MTTR, cumplimiento SLA 
           "codigo": "BLOQUE-A",
           "nombre": "Bloque A",
           "activo": true,
-          "created_at": "2026-10-28T23:32:07.000000Z",
-          "updated_at": "2026-10-28T23:32:07.000000Z",
+          "created_at": "2026-10-28T23:55:27.000000Z",
+          "updated_at": "2026-10-28T23:55:27.000000Z",
           "pisos": [
             {
               "id": 1,
@@ -4918,8 +4918,8 @@ Indicadores del periodo: totales por estado y prioridad, MTTR, cumplimiento SLA 
               "nombre": "Piso 1",
               "nivel": 1,
               "activo": true,
-              "created_at": "2026-10-28T23:32:07.000000Z",
-              "updated_at": "2026-10-28T23:32:07.000000Z",
+              "created_at": "2026-10-28T23:55:27.000000Z",
+              "updated_at": "2026-10-28T23:55:27.000000Z",
               "espacios": [
                 {
                   "id": 1,
@@ -4928,8 +4928,8 @@ Indicadores del periodo: totales por estado y prioridad, MTTR, cumplimiento SLA 
                   "nombre": "Aula 101",
                   "tipo": "AULA",
                   "activo": true,
-                  "created_at": "2026-10-28T23:32:07.000000Z",
-                  "updated_at": "2026-10-28T23:32:07.000000Z"
+                  "created_at": "2026-10-28T23:55:27.000000Z",
+                  "updated_at": "2026-10-28T23:55:27.000000Z"
                 }
               ]
             }
@@ -4943,8 +4943,8 @@ Indicadores del periodo: totales por estado y prioridad, MTTR, cumplimiento SLA 
       "nombre": "Sede Norte",
       "direccion": "Avenida Carrera 45 # 103-60",
       "activo": true,
-      "created_at": "2026-10-28T23:32:07.000000Z",
-      "updated_at": "2026-10-28T23:32:07.000000Z",
+      "created_at": "2026-10-28T23:55:27.000000Z",
+      "updated_at": "2026-10-28T23:55:27.000000Z",
       "edificios": [
         {
           "id": 3,
@@ -4952,8 +4952,8 @@ Indicadores del periodo: totales por estado y prioridad, MTTR, cumplimiento SLA 
           "codigo": "BLOQUE-C",
           "nombre": "Bloque C",
           "activo": true,
-          "created_at": "2026-10-28T23:32:07.000000Z",
-          "updated_at": "2026-10-28T23:32:07.000000Z",
+          "created_at": "2026-10-28T23:55:27.000000Z",
+          "updated_at": "2026-10-28T23:55:27.000000Z",
           "pisos": [
             {
               "id": 6,
@@ -4962,8 +4962,8 @@ Indicadores del periodo: totales por estado y prioridad, MTTR, cumplimiento SLA 
               "nombre": "Piso 1",
               "nivel": 1,
               "activo": true,
-              "created_at": "2026-10-28T23:32:07.000000Z",
-              "updated_at": "2026-10-28T23:32:07.000000Z",
+              "created_at": "2026-10-28T23:55:27.000000Z",
+              "updated_at": "2026-10-28T23:55:27.000000Z",
               "espacios": [
                 {
                   "id": 11,
@@ -4972,8 +4972,8 @@ Indicadores del periodo: totales por estado y prioridad, MTTR, cumplimiento SLA 
                   "nombre": "Aula 101",
                   "tipo": "AULA",
                   "activo": true,
-                  "created_at": "2026-10-28T23:32:07.000000Z",
-                  "updated_at": "2026-10-28T23:32:07.000000Z"
+                  "created_at": "2026-10-28T23:55:27.000000Z",
+                  "updated_at": "2026-10-28T23:55:27.000000Z"
                 }
               ]
             }
@@ -5029,8 +5029,8 @@ Crea una sede, edificio, piso o espacio. `{nivel}`: `sedes`, `edificios`, `pisos
     "nombre": "Bloque S",
     "sede_id": 3,
     "activo": true,
-    "updated_at": "2026-10-28T23:32:43.000000Z",
-    "created_at": "2026-10-28T23:32:43.000000Z",
+    "updated_at": "2026-10-28T23:55:55.000000Z",
+    "created_at": "2026-10-28T23:55:55.000000Z",
     "id": 4
   }
 }
@@ -5049,7 +5049,7 @@ Ejemplo de error `422`:
   "type": "https://praxis.ecci.edu.co/problemas/regla-de-negocio",
   "title": "Los datos enviados no son válidos.",
   "status": 422,
-  "detail": "Esa ubicación ya se encuentra parametrizada. (and 1 more error)",
+  "detail": "Esa ubicación ya se encuentra parametrizada. (y 1 error más)",
   "instance": "/api/v1/admin/ubicaciones/edificios",
   "errors": {
     "codigo": [
@@ -5098,8 +5098,8 @@ Edita una ubicación (mismos campos que al crear, todos opcionales).
     "codigo": "BLOQUE-S",
     "nombre": "Bloque S - Laboratorios",
     "activo": true,
-    "created_at": "2026-10-28T23:32:43.000000Z",
-    "updated_at": "2026-10-28T23:32:43.000000Z"
+    "created_at": "2026-10-28T23:55:55.000000Z",
+    "updated_at": "2026-10-28T23:55:55.000000Z"
   }
 }
 ```
@@ -5146,8 +5146,8 @@ Activa o inactiva una ubicación (deja de salir en el árbol activo).
     "codigo": "BLOQUE-S",
     "nombre": "Bloque S - Laboratorios",
     "activo": false,
-    "created_at": "2026-10-28T23:32:43.000000Z",
-    "updated_at": "2026-10-28T23:32:43.000000Z"
+    "created_at": "2026-10-28T23:55:55.000000Z",
+    "updated_at": "2026-10-28T23:55:55.000000Z"
   }
 }
 ```
@@ -5217,8 +5217,8 @@ Categorías y subcategorías, incluidas las inactivas.
       "nivel_riesgo_base": "BAJO",
       "especialidad_id": 5,
       "activo": true,
-      "created_at": "2026-10-28T23:32:06.000000Z",
-      "updated_at": "2026-10-28T23:32:06.000000Z",
+      "created_at": "2026-10-28T23:55:27.000000Z",
+      "updated_at": "2026-10-28T23:55:27.000000Z",
       "subcategorias": [
         {
           "id": 27,
@@ -5231,8 +5231,8 @@ Categorías y subcategorías, incluidas las inactivas.
           "nivel_riesgo_base": "BAJO",
           "especialidad_id": 5,
           "activo": true,
-          "created_at": "2026-10-28T23:32:06.000000Z",
-          "updated_at": "2026-10-28T23:32:06.000000Z"
+          "created_at": "2026-10-28T23:55:27.000000Z",
+          "updated_at": "2026-10-28T23:55:27.000000Z"
         }
       ],
       "especialidad": {
@@ -5240,8 +5240,8 @@ Categorías y subcategorías, incluidas las inactivas.
         "codigo": "CLIMATIZACION",
         "nombre": "Técnico de climatización",
         "activo": true,
-        "created_at": "2026-10-28T23:32:06.000000Z",
-        "updated_at": "2026-10-28T23:32:06.000000Z"
+        "created_at": "2026-10-28T23:55:27.000000Z",
+        "updated_at": "2026-10-28T23:55:27.000000Z"
       }
     },
     {
@@ -5255,8 +5255,8 @@ Categorías y subcategorías, incluidas las inactivas.
       "nivel_riesgo_base": "BAJO",
       "especialidad_id": 3,
       "activo": true,
-      "created_at": "2026-10-28T23:32:06.000000Z",
-      "updated_at": "2026-10-28T23:32:06.000000Z",
+      "created_at": "2026-10-28T23:55:27.000000Z",
+      "updated_at": "2026-10-28T23:55:27.000000Z",
       "subcategorias": [
         {
           "id": 23,
@@ -5269,8 +5269,8 @@ Categorías y subcategorías, incluidas las inactivas.
           "nivel_riesgo_base": "BAJO",
           "especialidad_id": 3,
           "activo": true,
-          "created_at": "2026-10-28T23:32:06.000000Z",
-          "updated_at": "2026-10-28T23:32:06.000000Z"
+          "created_at": "2026-10-28T23:55:27.000000Z",
+          "updated_at": "2026-10-28T23:55:27.000000Z"
         }
       ],
       "especialidad": {
@@ -5278,8 +5278,8 @@ Categorías y subcategorías, incluidas las inactivas.
         "codigo": "CERRAJERIA",
         "nombre": "Cerrajero",
         "activo": true,
-        "created_at": "2026-10-28T23:32:06.000000Z",
-        "updated_at": "2026-10-28T23:32:06.000000Z"
+        "created_at": "2026-10-28T23:55:27.000000Z",
+        "updated_at": "2026-10-28T23:55:27.000000Z"
       }
     }
   ]
@@ -5335,8 +5335,8 @@ Crea una categoría o, con `categoria_padre_id`, una subcategoría.
     "requiere_confirmacion_cierre": false,
     "nivel_riesgo_base": "BAJO",
     "activo": true,
-    "updated_at": "2026-10-28T23:32:44.000000Z",
-    "created_at": "2026-10-28T23:32:44.000000Z",
+    "updated_at": "2026-10-28T23:55:56.000000Z",
+    "created_at": "2026-10-28T23:55:56.000000Z",
     "id": 39
   }
 }
@@ -5387,8 +5387,8 @@ Edita una categoría (mismos campos, todos opcionales).
     "nivel_riesgo_base": "BAJO",
     "especialidad_id": null,
     "activo": true,
-    "created_at": "2026-10-28T23:32:44.000000Z",
-    "updated_at": "2026-10-28T23:32:44.000000Z"
+    "created_at": "2026-10-28T23:55:56.000000Z",
+    "updated_at": "2026-10-28T23:55:56.000000Z"
   }
 }
 ```
@@ -5523,7 +5523,7 @@ Matriz de prioridad, metas SLA y parámetros generales del sistema.
         "tipo_dato": "entero",
         "grupo": "ANALITICA",
         "descripcion": "Reportes de la misma categoría en un espacio para considerarlo falla recurrente.",
-        "actualizado_en": "2026-10-28T23:32:07+00:00"
+        "actualizado_en": "2026-10-28T23:55:27+00:00"
       }
     ]
   }
@@ -5596,7 +5596,7 @@ Actualiza la matriz Impacto × Urgencia, las metas SLA o los parámetros; aplica
         "tipo_dato": "entero",
         "grupo": "ANALITICA",
         "descripcion": "Reportes de la misma categoría en un espacio para considerarlo falla recurrente.",
-        "actualizado_en": "2026-10-28T23:32:07+00:00"
+        "actualizado_en": "2026-10-28T23:55:27+00:00"
       }
     ]
   }
@@ -5645,11 +5645,11 @@ Eventos de auditoría de configuración (cambios de parámetros, SLA, matriz, ca
 {
   "data": [
     {
-      "id": "01a184db-e170-73e1-b612-1e8a74891182",
+      "id": "01a184f1-1b31-7246-84a8-6aaae7031c54",
       "incidencia_id": null,
-      "tipo_evento": "SLA_ACTUALIZADO",
+      "tipo_evento": "CATEGORIA_CREADA",
       "categoria": "CONFIGURACION",
-      "fecha_hora": "2026-10-28T23:32:45+00:00",
+      "fecha_hora": "2026-10-28T23:55:56+00:00",
       "usuario": {
         "id": 9,
         "name": "Alberto Administrador"
@@ -5657,26 +5657,27 @@ Eventos de auditoría de configuración (cambios de parámetros, SLA, matriz, ca
       "rol": "R07",
       "estado_anterior": null,
       "estado_nuevo": null,
-      "motivo": "Cambio de configuración en SLA:BAJA.",
+      "motivo": null,
       "datos": {
-        "parametro": "SLA:BAJA",
-        "valor_anterior": {
-          "horas_primera_respuesta": 16,
-          "horas_resolucion": 72
-        },
-        "valor_nuevo": {
-          "horas_primera_respuesta": 16,
-          "horas_resolucion": 80
+        "nuevo": {
+          "codigo": "JARDINERIA",
+          "nombre": "Jardinería",
+          "requiere_confirmacion_cierre": false,
+          "nivel_riesgo_base": "BAJO",
+          "activo": true,
+          "updated_at": "2026-10-28T23:55:56.000000Z",
+          "created_at": "2026-10-28T23:55:56.000000Z",
+          "id": 39
         }
       },
       "evidencias": null
     },
     {
-      "id": "01a184db-e172-720e-a996-d50f5b789330",
+      "id": "01a184f1-1bb8-7354-99b1-3f3019a40f4f",
       "incidencia_id": null,
-      "tipo_evento": "PARAMETRO_ACTUALIZADO",
+      "tipo_evento": "CATEGORIA_ACTUALIZADA",
       "categoria": "CONFIGURACION",
-      "fecha_hora": "2026-10-28T23:32:45+00:00",
+      "fecha_hora": "2026-10-28T23:55:56+00:00",
       "usuario": {
         "id": 9,
         "name": "Alberto Administrador"
@@ -5684,11 +5685,36 @@ Eventos de auditoría de configuración (cambios de parámetros, SLA, matriz, ca
       "rol": "R07",
       "estado_anterior": null,
       "estado_nuevo": null,
-      "motivo": "Cambio de configuración en PLAZO_ACLARACION_DIAS_HABILES.",
+      "motivo": null,
       "datos": {
-        "parametro": "PLAZO_ACLARACION_DIAS_HABILES",
-        "valor_anterior": "5",
-        "valor_nuevo": "3"
+        "anterior": {
+          "id": 39,
+          "categoria_padre_id": null,
+          "codigo": "JARDINERIA",
+          "nombre": "Jardinería",
+          "descripcion": null,
+          "exige_evidencia_fotografica": false,
+          "requiere_confirmacion_cierre": false,
+          "nivel_riesgo_base": "BAJO",
+          "especialidad_id": null,
+          "activo": true,
+          "created_at": "2026-10-28T23:55:56.000000Z",
+          "updated_at": "2026-10-28T23:55:56.000000Z"
+        },
+        "nuevo": {
+          "id": 39,
+          "categoria_padre_id": null,
+          "codigo": "JARDINERIA",
+          "nombre": "Jardinería",
+          "descripcion": "Poda, riego y zonas verdes.",
+          "exige_evidencia_fotografica": true,
+          "requiere_confirmacion_cierre": false,
+          "nivel_riesgo_base": "BAJO",
+          "especialidad_id": null,
+          "activo": true,
+          "created_at": "2026-10-28T23:55:56.000000Z",
+          "updated_at": "2026-10-28T23:55:56.000000Z"
+        }
       },
       "evidencias": null
     }
@@ -5706,7 +5732,7 @@ Eventos de auditoría de configuración (cambios de parámetros, SLA, matriz, ca
     "links": [
       {
         "url": null,
-        "label": "&laquo; Previous",
+        "label": "&laquo; Anterior",
         "page": null,
         "active": false
       }
