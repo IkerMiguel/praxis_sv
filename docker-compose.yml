@@ -44,6 +44,9 @@ services:
     container_name: praxis_sv_scheduler
     restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "schedule:work"]
+    healthcheck:
+      test: ["CMD", "healthcheck-schedule"]
+      start_period: 10s
     environment:
       APP_ENV: local
       DB_CONNECTION: pgsql
@@ -54,6 +57,7 @@ services:
       DB_PASSWORD: praxis_secret
       CACHE_STORE: database
       LOG_CHANNEL: stderr
+      NGINX_LISTEN_IP_PROTOCOL: ipv4
     depends_on:
       app:
         condition: service_healthy
