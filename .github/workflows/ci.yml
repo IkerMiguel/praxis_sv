@@ -1,13 +1,13 @@
-# CI: lint + tests en cada push/PR.
+# CI: lint + tests en cada push/PR a main, master y dev.
 # CD: conectar este repo a Railway → deploy automático en push a main
 #     (Release Command: php artisan migrate --force).
 name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, dev]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, dev]
 
 jobs:
   tests:
@@ -48,4 +48,64 @@ jobs:
         run: vendor/bin/pint --test
 
       - name: Run Pest tests
+        run: php artisan test
+
+  postgres:
+    name: Migraciones y Pest sobre PostgreSQL
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: praxis_test
+          POSTGRES_USER: praxis
+          POSTGRES_PASSWORD: praxis_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U praxis -d praxis_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: praxis_test
+      DB_USERNAME: praxis
+      DB_PASSWORD: praxis_secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, pdo_pgsql, pgsql, bcmath, ctype, fileinfo, json, openssl, tokenizer, xml, curl, zip, intl
+          coverage: none
+
+      - name: Get Composer cache dir
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare environment
+        run: cp .env.example .env && php artisan key:generate
+
+      - name: Migrate and seed (PostgreSQL)
+        run: php artisan migrate:fresh --seed --force
+
+      - name: Run Pest tests (PostgreSQL)
         run: php artisan test
