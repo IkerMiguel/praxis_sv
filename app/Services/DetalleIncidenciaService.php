@@ -133,6 +133,7 @@ class DetalleIncidenciaService
             ->where('visibilidad', EventoAuditoria::PUBLICO)
             ->where('categoria', CategoriaEvento::Estado->value)
             ->orderBy('fecha_hora')
+            ->orderBy('id')
             ->get()
             ->each(function (EventoAuditoria $evento): void {
                 $evento->datos = null;

@@ -77,7 +77,7 @@ it('rechaza la reapertura fuera de la ventana de garantía ofreciendo crear un n
         ->postJson("/api/v1/incidencias/{$incidencia->id}/reabrir", ['motivo' => 'El problema volvió a presentarse en el aula'])
         ->assertUnprocessable()
         ->assertJsonPath('alternativa', 'CREAR_NUEVO_REPORTE')
-        ->assertJsonPath('detail', 'La ventana de garantía para reabrir la solicitud ya expiró.');
+        ->assertJsonPath('detail', 'El plazo de garantía para reapertura ha vencido. Si la falla persiste, por favor cree un nuevo reporte');
 });
 
 it('bloquea la reapertura al alcanzar el máximo de reaperturas', function () {
@@ -91,7 +91,15 @@ it('bloquea la reapertura al alcanzar el máximo de reaperturas', function () {
     $this->comoRol($this->reportante, Rol::Reportante)
         ->postJson("/api/v1/incidencias/{$incidencia->id}/reabrir", ['motivo' => 'El problema volvió a presentarse en el aula'])
         ->assertUnprocessable()
-        ->assertJsonPath('detail', 'La solicitud alcanzó el máximo de 2 reaperturas permitidas.');
+        ->assertJsonPath('detail', 'Este caso ha alcanzado el límite máximo de reaperturas permitidas. Se requiere radicar una nueva solicitud para una intervención mayor');
+});
+
+it('exige motivo de cancelacion con mensaje personalizado al cancelar sin motivo', function () {
+    $incidencia = Incidencia::factory()->for($this->reportante, 'creador')->enEstado(EstadoIncidencia::Registrada)->create();
+
+    $this->comoRol($this->reportante, Rol::Reportante)
+        ->postJson("/api/v1/incidencias/{$incidencia->id}/cancelar-solicitante", [])
+        ->assertJsonValidationErrors(['motivo' => 'Debe ingresar el motivo por el cual cancela el reporte']);
 });
 
 it('exige un motivo de reapertura de al menos 20 caracteres', function () {

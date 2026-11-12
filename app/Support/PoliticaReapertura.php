@@ -37,11 +37,11 @@ final class PoliticaReapertura
         $limite = $fechaLimite?->toIso8601String();
 
         if ($fechaLimite !== null && $ahora->greaterThan($fechaLimite)) {
-            return ['permitido' => false, 'motivo' => 'La ventana de garantía para reabrir la solicitud ya expiró.', 'fecha_limite' => $limite, 'reaperturas_restantes' => $restantes];
+            return ['permitido' => false, 'motivo' => 'El plazo de garantía para reapertura ha vencido. Si la falla persiste, por favor cree un nuevo reporte', 'fecha_limite' => $limite, 'reaperturas_restantes' => $restantes];
         }
 
         if ($restantes === 0) {
-            return ['permitido' => false, 'motivo' => "La solicitud alcanzó el máximo de {$maximoReaperturas} reaperturas permitidas.", 'fecha_limite' => $limite, 'reaperturas_restantes' => 0];
+            return ['permitido' => false, 'motivo' => 'Este caso ha alcanzado el límite máximo de reaperturas permitidas. Se requiere radicar una nueva solicitud para una intervención mayor', 'fecha_limite' => $limite, 'reaperturas_restantes' => 0];
         }
 
         return ['permitido' => true, 'motivo' => null, 'fecha_limite' => $limite, 'reaperturas_restantes' => $restantes];

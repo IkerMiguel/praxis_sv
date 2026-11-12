@@ -1,12 +1,15 @@
 <?php
 
+use App\Enums\Impacto;
 use App\Enums\Rol;
+use App\Enums\Urgencia;
 use App\Models\CategoriaIncidencia;
 use App\Models\EspacioFisico;
 use App\Models\EventoAuditoria;
 use App\Models\Incidencia;
 use App\Models\NotificacionPlataforma;
 use App\Models\User;
+use App\Services\CatalogoService;
 use Illuminate\Http\UploadedFile;
 
 beforeEach(function () {
@@ -205,4 +208,40 @@ it('impide radicar a roles sin permiso de creación (D09)', function () {
     $this->comoRol($this->usuarioConRol(Rol::Autorizador), Rol::Autorizador)
         ->postJson('/api/v1/incidencias/radicar', datosRadicacion($this->espacio))
         ->assertForbidden();
+});
+
+it('permite radicar dos incidencias seguidas con store de cache en base de datos', function () {
+    config(['cache.default' => 'database']);
+
+    $this->comoRol($this->reportante, Rol::Reportante)
+        ->withHeader('Idempotency-Key', 'radicacion-cache-1')
+        ->postJson('/api/v1/incidencias/radicar', datosRadicacion($this->espacio))
+        ->assertCreated();
+
+    $this->comoRol($this->reportante, Rol::Reportante)
+        ->withHeader('Idempotency-Key', 'radicacion-cache-2')
+        ->postJson('/api/v1/incidencias/radicar', datosRadicacion($this->espacio))
+        ->assertCreated();
+});
+
+it('mantiene operativas prioridadPara y prioridadPorCodigo al leer desde la cache de base de datos', function () {
+    config(['cache.default' => 'database']);
+
+    $catalogo = app(CatalogoService::class);
+
+    $prioridad1 = $catalogo->prioridadPara(Impacto::Alto, Urgencia::Alta);
+    $porCodigo1 = $catalogo->prioridadPorCodigo('ALTA');
+
+    expect($prioridad1)->not->toBeNull()
+        ->and($porCodigo1)->not->toBeNull();
+
+    $prioridad2 = $catalogo->prioridadPara(Impacto::Alto, Urgencia::Alta);
+    $porCodigo2 = $catalogo->prioridadPorCodigo('ALTA');
+
+    expect($prioridad2)->not->toBeNull()
+        ->and($prioridad2->id)->toBe($prioridad1->id)
+        ->and($prioridad2->codigo)->toBe($prioridad1->codigo)
+        ->and($porCodigo2)->not->toBeNull()
+        ->and($porCodigo2->id)->toBe($porCodigo1->id)
+        ->and($porCodigo2->codigo)->toBe('ALTA');
 });

@@ -20,12 +20,12 @@ function evaluarReapertura(
 ): array {
     return PoliticaReapertura::evaluar(
         $estado,
-        $conCierre ? CarbonImmutable::parse('2026-10-28 15:00') : null,
+        $conCierre ? CarbonImmutable::parse('2026-10-28 15:00', 'UTC') : null,
         $resultado,
         $reaperturas,
         $maximo,
-        $conCierre ? CarbonImmutable::parse('2026-11-04 15:00') : null,
-        CarbonImmutable::parse($ahora),
+        $conCierre ? CarbonImmutable::parse('2026-11-04 15:00', 'UTC') : null,
+        CarbonImmutable::parse($ahora, 'UTC'),
     );
 }
 
@@ -66,7 +66,7 @@ it('rechaza la reapertura fuera de la ventana de garantía', function () {
     $resultado = evaluarReapertura(ahora: '2026-11-04 15:01');
 
     expect($resultado['permitido'])->toBeFalse()
-        ->and($resultado['motivo'])->toBe('La ventana de garantía para reabrir la solicitud ya expiró.')
+        ->and($resultado['motivo'])->toBe('El plazo de garantía para reapertura ha vencido. Si la falla persiste, por favor cree un nuevo reporte')
         ->and($resultado['reaperturas_restantes'])->toBe(2);
 });
 
@@ -74,7 +74,7 @@ it('rechaza la reapertura cuando se agotó el cupo', function () {
     $resultado = evaluarReapertura(reaperturas: 2);
 
     expect($resultado['permitido'])->toBeFalse()
-        ->and($resultado['motivo'])->toBe('La solicitud alcanzó el máximo de 2 reaperturas permitidas.')
+        ->and($resultado['motivo'])->toBe('Este caso ha alcanzado el límite máximo de reaperturas permitidas. Se requiere radicar una nueva solicitud para una intervención mayor')
         ->and($resultado['reaperturas_restantes'])->toBe(0);
 });
 

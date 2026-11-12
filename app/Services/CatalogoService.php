@@ -24,7 +24,7 @@ class CatalogoService
 
     public const CACHE_MATRIZ = 'praxis:catalogo:matriz';
 
-    public const CACHE_PRIORIDADES = 'praxis:catalogo:prioridades';
+    public const CACHE_PRIORIDADES = 'praxis:catalogo:prioridades:v2';
 
     public const CACHE_ESTADOS = 'praxis:catalogo:estados';
 
@@ -134,7 +134,16 @@ class CatalogoService
      */
     public function prioridades(): Collection
     {
-        return Cache::rememberForever(self::CACHE_PRIORIDADES, fn () => Prioridad::query()->orderByDesc('nivel')->get());
+        $filas = Cache::rememberForever(
+            self::CACHE_PRIORIDADES,
+            fn (): array => Prioridad::query()
+                ->orderByDesc('nivel')
+                ->get()
+                ->map(fn (Prioridad $prioridad): array => $prioridad->getAttributes())
+                ->all(),
+        );
+
+        return Prioridad::hydrate($filas);
     }
 
     public function prioridadPorCodigo(string $codigo): ?Prioridad

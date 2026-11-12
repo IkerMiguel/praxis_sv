@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CategoriaEvento;
 use App\Enums\EstadoIncidencia;
 use App\Enums\Rol;
 use App\Models\CategoriaIncidencia;
@@ -74,7 +75,7 @@ it('recorre el ciclo completo E01 -> E03 -> E04 -> E05 -> E06 -> E07 -> E10 -> E
         ->and($incidencia->sla_respuesta_cumplido)->toBeTrue()
         ->and($incidencia->sla_resolucion_cumplido)->not->toBeNull();
 
-    $estados = EventoAuditoria::query()->where('incidencia_id', $id)->whereNotNull('estado_nuevo')->orderBy('fecha_hora')->pluck('estado_nuevo')->all();
+    $estados = EventoAuditoria::query()->where('incidencia_id', $id)->whereNotNull('estado_nuevo')->orderBy('fecha_hora')->orderBy('id')->pluck('estado_nuevo')->all();
     expect($estados)->toBe(['E01', 'E03', 'E04', 'E05', 'E06', 'E07', 'E10', 'E11', 'E12', 'E14', 'E15']);
 
     $this->comoRol($reportante, Rol::Reportante)->getJson("/api/v1/incidencias/{$id}/historial")
@@ -84,4 +85,52 @@ it('recorre el ciclo completo E01 -> E03 -> E04 -> E05 -> E06 -> E07 -> E10 -> E
     $this->comoRol($coordinador, Rol::Coordinador)->getJson("/api/v1/incidencias/{$id}/historial?categoria=FORENSE")
         ->assertJsonPath('alcance', 'COMPLETO')
         ->assertJsonPath('data.0.tipo_evento', 'CAMBIO_PRIORIDAD');
+});
+
+it('desempata eventos de auditoria con la misma fecha_hora ordenando por id ascendente en los endpoints', function () {
+    $reportante = $this->usuarioConRol(Rol::Reportante);
+    $coordinador = $this->usuarioConRol(Rol::Coordinador);
+    $incidencia = Incidencia::factory()->for($reportante, 'creador')->create();
+    $fecha = now()->subMinutes(10);
+
+    $uuidMayor = 'ffffffff-0000-0000-0000-000000000002';
+    $uuidMenor = '00000000-0000-0000-0000-000000000001';
+
+    EventoAuditoria::create([
+        'id' => $uuidMayor,
+        'incidencia_id' => $incidencia->id,
+        'usuario_id' => null,
+        'tipo_evento' => 'CAMBIO_ESTADO',
+        'categoria' => CategoriaEvento::Estado->value,
+        'visibilidad' => EventoAuditoria::PUBLICO,
+        'estado_anterior' => 'E01',
+        'estado_nuevo' => 'E03',
+        'fecha_hora' => $fecha,
+    ]);
+
+    EventoAuditoria::create([
+        'id' => $uuidMenor,
+        'incidencia_id' => $incidencia->id,
+        'usuario_id' => null,
+        'tipo_evento' => 'CAMBIO_ESTADO',
+        'categoria' => CategoriaEvento::Estado->value,
+        'visibilidad' => EventoAuditoria::PUBLICO,
+        'estado_anterior' => 'E03',
+        'estado_nuevo' => 'E04',
+        'fecha_hora' => $fecha,
+    ]);
+
+    $respMisSolicitudes = $this->comoRol($reportante, Rol::Reportante)
+        ->getJson("/api/v1/mis-solicitudes/{$incidencia->id}")
+        ->assertOk();
+
+    $idsMisSolicitudes = collect($respMisSolicitudes->json('data.historial'))->pluck('id')->all();
+    expect($idsMisSolicitudes)->toBe([$uuidMenor, $uuidMayor]);
+
+    $respHistorial = $this->comoRol($coordinador, Rol::Coordinador)
+        ->getJson("/api/v1/incidencias/{$incidencia->id}/historial")
+        ->assertOk();
+
+    $idsHistorial = collect($respHistorial->json('data'))->pluck('id')->all();
+    expect($idsHistorial)->toBe([$uuidMenor, $uuidMayor]);
 });
