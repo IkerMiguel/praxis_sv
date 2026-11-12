@@ -530,6 +530,12 @@ Perfil del usuario autenticado: roles, rol activo, ruta de inicio, especialidade
 
 Envía el correo de restablecimiento de contraseña. Responde igual exista o no el correo.
 
+> **Flujo de recuperación por enlace (HU-1.4 - Opción A):**
+> 1. El usuario solicita la recuperación indicando su correo en `POST /api/v1/auth/solicitar-recuperacion`.
+> 2. Si el correo existe, el backend envía un mensaje con un enlace seguro que incluye el parámetro `token` (vigente por 30 minutos).
+> 3. Al abrir el enlace, el frontend extrae el token y consulta `GET /api/v1/auth/restablecer-password/{token}` para comprobar si sigue vigente antes de desplegar el formulario.
+> 4. Tras ingresar y confirmar la nueva clave, el frontend envía `token`, `password` y `password_confirmation` a `POST /api/v1/auth/restablecer-password`.
+
 - **Roles (D09):** Público (sin token).
 - **Estado:** no cambia el estado de la incidencia.
 
