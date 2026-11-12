@@ -103,6 +103,7 @@ class ConsolaController extends Controller
             ->when($request->filled('categoria'), fn (Builder $query) => $query->where('categoria', $request->input('categoria')))
             ->with('usuario:id,name')
             ->orderBy('fecha_hora')
+            ->orderBy('id')
             ->get();
 
         return response()->json(['alcance' => 'COMPLETO', 'data' => EventoAuditoriaResource::collection($eventos)]);
