@@ -1,8 +1,5 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+Schedule::command('praxis:vencer-aclaraciones')->dailyAt('06:00')->timezone(config('praxis.zona_horaria'))->withoutOverlapping();
